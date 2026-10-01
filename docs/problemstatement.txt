@@ -1,0 +1,41 @@
+## Problem Statement — Google Photos Semantic Memory Discovery
+
+**Users can store thousands of photos in Google Photos, but finding a specific memory can become difficult when they remember the context of the moment rather than the exact photo, date, or filename.**
+
+For example, a user may remember:
+
+> *“I’m looking for those photos from Goa when we went to a café with friends in the evening.”*
+
+They may remember **the place, activity, people, and approximate time**, but not the exact date or which photo was taken.
+
+Today, photo discovery largely requires users to translate that vague memory into a search query and then scan through potentially relevant results. This can make the process feel more like **searching for a file than revisiting a memory**.
+
+### Core problem
+
+> **How might we help users find a specific memory in their photo library when they remember the context of the experience but not the exact photo or date?**
+
+### User needs
+
+Users should be able to:
+
+* Describe a memory naturally using the clues they remember.
+* Combine multiple contextual clues such as **place + activity + people + time**.
+* Discover **where that memory exists in their photo history**.
+* See the surrounding photos and chronological context.
+* Move between relevant moments rather than manually scanning their entire library.
+
+### Product opportunity
+
+Instead of treating photo search purely as:
+
+**“Which photos match my query?”**
+
+the experience can shift toward:
+
+**“Where in my photo history is the memory I'm trying to find?”**
+
+That distinction is the foundation of your **Semantic Memory Timeline** concept.
+
+### One-line version for your case study
+
+> **Google Photos users often remember the context of a memory—where they were, what they were doing, who they were with, or roughly when it happened—rather than the exact photo or date, making contextual memories difficult to locate efficiently.**
