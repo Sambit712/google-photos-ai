@@ -1,0 +1,768 @@
+Yes. Below is a **UI/UX-only specification** you can give directly to Antigravity. It deliberately avoids backend architecture, APIs, embeddings, models, databases, or implementation details.
+
+The central principle should be:
+
+> **Do not redesign Google Photos. Make the new memory-locator experience feel like a natural extension of Google Photos.**
+
+# Google Photos — Semantic Memory Locator UI Specification
+
+## 1. Product experience
+
+Create a mobile-first photo application closely inspired by the familiar visual structure and interaction patterns of **Google Photos**.
+
+The application should initially feel like a normal photo gallery. The new functionality becomes visible primarily when the user tries to find a memory.
+
+The core user journey is:
+
+**Photos → Search for remembered context → Possible memory locations → Jump to memory → Browse surrounding photos → Previous/Next possible memory**
+
+The user should feel that they are **locating a moment in their personal timeline**, rather than receiving conventional search results.
+
+---
+
+## 2. Overall visual direction
+
+Keep the interface extremely clean and image-focused.
+
+Use a predominantly **white background**, dark gray/black text, subtle gray secondary text, very light separators, rounded elements where appropriate, and blue as the primary interaction/highlight color.
+
+Avoid excessive cards, dashboards, analytics, gradients, decorative illustrations, large AI branding, technical terminology, confidence dashboards, or complicated filters.
+
+Photos should remain the strongest visual elements on every screen.
+
+The interface should feel:
+
+**Familiar → Minimal → Personal → Visual → Calm**
+
+Not:
+
+**Technical → Futuristic → AI-heavy → Dashboard-like**
+
+---
+
+# SCREEN 1 — PHOTOS HOME
+
+This screen should look and behave like the normal Google Photos mobile gallery.
+
+## Header
+
+At the top:
+
+```text
+☰/icon            Google Photos              [Avatar]
+```
+
+Keep the header white and relatively compact.
+
+The Google Photos identity should be centered or visually prominent without taking significant vertical space.
+
+No large page heading such as:
+
+> Semantic Memory Timeline
+
+The feature should not feel like a separate application.
+
+---
+
+## Memories / Highlights carousel
+
+Immediately beneath the header, show a horizontally scrollable row of vertical memory cards.
+
+Example:
+
+```text
+┌──────────┐ ┌──────────┐ ┌──────────┐
+│          │ │          │ │          │
+│  PHOTO   │ │  PHOTO   │ │  PHOTO   │
+│          │ │          │ │          │
+│ Goa Trip │ │ Friends  │ │ 1 yr ago │
+└──────────┘ └──────────┘ └──────────┘
+```
+
+Cards should:
+
+- have rounded corners;
+- use photos as full backgrounds;
+- contain subtle dark gradients toward the bottom;
+- have white labels over the image;
+- be vertically oriented.
+
+Possible labels:
+
+**Goa Trip**  
+**Recent Highlights**  
+**College Days**  
+**1 Year Ago**  
+**Good Times**
+
+This area exists primarily to make the app immediately recognizable as a photo/memory product.
+
+---
+
+# 3. Main chronological photo timeline
+
+Underneath the highlights, display the user's normal photo library.
+
+Group photos chronologically.
+
+For example:
+
+```text
+Jun 2    Kolkata
+
+▣  ▣  ▣
+▣  ▣  ▣
+▣  ▣  ▣
+
+
+May 28    Chennai
+
+▣  ▣  ▣
+▣  ▣  ▣
+```
+
+Use a **3-column grid** on mobile.
+
+Keep gaps between images extremely small.
+
+Do not put every image inside a rounded card.
+
+The photos themselves should essentially form the interface.
+
+The date should be dark and prominent.
+
+Location should appear beside it using lighter gray text.
+
+Example:
+
+**Jan 15   Goa**
+
+---
+
+# 4. Bottom navigation
+
+Keep persistent bottom navigation containing exactly:
+
+```text
+     Photos             Search             Library
+       ▣                  ⌕                  ▥
+```
+
+The currently selected destination uses blue.
+
+Inactive destinations use dark gray.
+
+The bottom navigation should remain visible throughout normal browsing.
+
+### Photos
+
+Normal chronological library.
+
+### Search
+
+Entry point for the new semantic memory experience.
+
+### Library
+
+Standard collections/albums area.
+
+The new feature should **not require another navigation destination called "AI", "Semantic", "Memory Search", etc.**
+
+Search itself becomes smarter.
+
+---
+
+# SCREEN 2 — SEARCH
+
+This is where the core concept begins.
+
+When Search is selected, show a large but simple search field near the top.
+
+```text
+┌────────────────────────────────────┐
+│ 🔍 Search your photos              │
+└────────────────────────────────────┘
+```
+
+The placeholder can alternatively say:
+
+> **Search your memories**
+
+Below the field, before anything is searched, show several lightweight example suggestions.
+
+For example:
+
+```text
+Goa with friends
+
+College nights
+
+Café memories
+
+Beach trips
+
+Birthday celebrations
+```
+
+Do not immediately explain the AI system.
+
+---
+
+# 5. Natural memory query
+
+The user should be able to type something conversational.
+
+Example:
+
+> **Goa café with friends in the evening**
+
+Once submitted, keep the original query visible at the top.
+
+Immediately underneath, show a small interpretation area.
+
+### "I understood"
+
+For example:
+
+```text
+I understood
+
+[ Goa ]   [ Café ]   [ Friends ]   [ Evening ]
+```
+
+Each clue should appear as a small rounded chip.
+
+Keep these chips subtle.
+
+Do not display technical labels such as:
+
+```text
+LOCATION_ENTITY
+ACTIVITY_CLASS
+TEMPORAL_ATTRIBUTE
+VECTOR MATCH
+```
+
+The user doesn't need to understand the system.
+
+They only need reassurance that the application understood what they remembered.
+
+---
+
+# 6. Memory locations instead of "search results"
+
+This is the most important UX decision.
+
+Do **not** primarily say:
+
+> 14 matching photos
+
+Instead say:
+
+> **3 possible memory locations**
+
+or:
+
+> **3 moments found in your timeline**
+
+This reinforces the fundamental product concept.
+
+---
+
+# SCREEN 3 — POSSIBLE MEMORIES
+
+Results should be grouped into **moments**, rather than showing one giant grid of individual matching photos.
+
+For example:
+
+```text
+3 possible memory locations
+
+
+Goa
+Jan 15, 2024 · Evening
+
+┌───────┬───────┬───────┐
+│       │       │       │
+│ PHOTO │ PHOTO │ PHOTO │
+│       │       │       │
+└───────┴───────┴───────┘
+
+Café · Friends · Evening
+
+                     View memory →
+```
+
+Then:
+
+```text
+Goa
+Oct 12, 2025 · Evening
+
+┌───────┬───────┬───────┐
+│       │       │       │
+│ PHOTO │ PHOTO │ PHOTO │
+│       │       │       │
+└───────┴───────┴───────┘
+
+Café · Travel · Friends
+
+                     View memory →
+```
+
+Each result represents a **moment in time**, not a single image.
+
+---
+
+# 7. Memory result design
+
+Each possible memory should contain five pieces of information.
+
+### Location
+
+Example:
+
+**Goa**
+
+### Date/time
+
+Example:
+
+**Jan 15, 2024 · Evening**
+
+### Preview
+
+Show approximately 3–4 photographs from that moment.
+
+The photos should dominate the card.
+
+### Context
+
+Underneath:
+
+```text
+Café · Friends · Evening
+```
+
+### Action
+
+Use:
+
+> **View memory →**
+
+Avoid buttons such as:
+
+> View AI Match
+
+> Analyze
+
+> Semantic Result
+
+> Inspect Cluster
+
+Again, hide the technology.
+
+---
+
+# 8. Matching strength
+
+Avoid prominently showing:
+
+> **87% semantic similarity**
+
+A consumer photo product doesn't need to expose this level of system information.
+
+If differentiation between results is necessary, use human-readable descriptions:
+
+**Closest match**
+
+**Similar memory**
+
+**Another possible memory**
+
+But even these should remain visually secondary.
+
+The photos, location, and date matter more.
+
+---
+
+# SCREEN 4 — MEMORY LOCATOR
+
+When the user taps **View memory**, do something different from ordinary search.
+
+Take them back into their **chronological photo timeline**.
+
+The timeline should automatically move to the relevant date.
+
+For example:
+
+```text
+             January 2024
+
+                  │
+                  │
+             Jan 15 · Goa
+                  │
+              ● FOUND
+                  │
+
+          ▣   ▣   ▣
+          ▣   ▣   ▣
+
+            Your memory
+
+                  │
+                  │
+
+             Jan 16 · Goa
+
+          ▣   ▣   ▣
+```
+
+The important part is that the matching moment appears **inside the user's existing photo history**.
+
+This is the signature interaction.
+
+---
+
+# 9. Highlight the located memory
+
+Once the app jumps to the relevant location, subtly highlight the matching section.
+
+Possible treatment:
+
+```text
+────────────────────────────────
+
+       ✦ Possible memory
+
+Jan 15 · Goa
+
+▣  ▣  ▣
+▣  ▣  ▣
+
+────────────────────────────────
+```
+
+Use a very subtle blue treatment.
+
+Possible options:
+
+- thin blue line;
+- small blue indicator;
+- faint blue background;
+- small sparkle icon;
+- "Possible memory" label.
+
+Do not put thick blue borders around every matching photo.
+
+The system has located a **moment**, so visually highlight the moment/group rather than every individual image.
+
+---
+
+# 10. Preserve surrounding context
+
+This is crucial.
+
+Do **not** hide all nonmatching photos.
+
+The user should see photos immediately before and after the matching moment.
+
+Example:
+
+```text
+Jan 14
+
+▣ ▣ ▣
+▣ ▣
+
+
+──────────────────────
+✦ POSSIBLE MEMORY
+
+Jan 15 · Goa
+
+▣ ▣ ▣
+▣ ▣ ▣
+──────────────────────
+
+
+Jan 16
+
+▣ ▣ ▣
+▣ ▣
+```
+
+Why?
+
+Because surrounding photos can trigger recognition.
+
+A search engine asks:
+
+> "Is this the matching image?"
+
+Your experience asks:
+
+> **"Is this the part of your life you were remembering?"**
+
+That difference should be visible in the UI.
+
+---
+
+# 11. Memory navigator
+
+If multiple moments match the user's description, provide a small floating navigation control.
+
+For example:
+
+```text
+╭─────────────────────────────╮
+│  ←        1 of 3       →   │
+╰─────────────────────────────╯
+```
+
+Or:
+
+```text
+← Previous memory
+
+       1 of 3
+
+Next memory →
+```
+
+Keep this control visible while browsing.
+
+When the user presses **Next**, the photo timeline should smoothly move to the next possible memory location.
+
+This is much better than returning to the search results every time.
+
+---
+
+# 12. Search refinement
+
+Suppose the first result isn't correct.
+
+The user should be able to refine the memory without starting again.
+
+For example, original query:
+
+> Goa café with friends
+
+Current interpretation:
+
+```text
+[ Goa ] [ Café ] [ Friends ]
+```
+
+Provide something lightweight such as:
+
+> **Add another detail**
+
+The user might add:
+
+> "It was at night."
+
+Now show:
+
+```text
+[ Goa ] [ Café ] [ Friends ] [ Night ]
+```
+
+The possible memory locations update accordingly.
+
+The experience should feel like **remembering more details progressively**.
+
+---
+
+# 13. Photo viewer
+
+Tapping an individual photo opens a familiar fullscreen photo viewer.
+
+Keep it extremely simple.
+
+```text
+←                             ⋮
+
+
+          LARGE PHOTO
+
+
+Jan 15, 2024
+Goa
+
+Café · Friends · Evening
+```
+
+Avoid displaying all inferred metadata by default.
+
+The semantic information can remain secondary.
+
+The primary experience should always be the photo.
+
+---
+
+# 14. Empty / unsuccessful search
+
+If no strong memory location is found, don't say:
+
+> No semantic vector matches.
+
+Instead:
+
+```text
+We couldn't find that memory yet.
+
+Try adding another detail.
+
+Where was it?
+Who were you with?
+What were you doing?
+Roughly when was it?
+```
+
+Then show tappable prompts:
+
+```text
+[ Add a place ]
+
+[ Add people ]
+
+[ Add an activity ]
+
+[ Add a time ]
+```
+
+This turns failure into progressive memory recall.
+
+---
+
+# 15. Example complete interaction
+
+Antigravity should implement the demo so this journey feels polished:
+
+### Step 1
+
+User opens Photos.
+
+They see:
+
+```text
+Highlights
+
+[ Goa Trip ] [ Friends ] [ 1 year ago ]
+
+Jan 2024 · Goa
+
+▣ ▣ ▣
+▣ ▣ ▣
+```
+
+### Step 2
+
+User taps:
+
+**Search**
+
+### Step 3
+
+User enters:
+
+> **Goa café with friends in the evening**
+
+### Step 4
+
+App displays:
+
+```text
+I understood
+
+[ Goa ] [ Café ] [ Friends ] [ Evening ]
+
+
+3 possible memory locations
+```
+
+### Step 5
+
+Three moment previews appear.
+
+User chooses:
+
+> **Jan 15, 2024 · Goa**
+
+and taps:
+
+**View memory →**
+
+### Step 6
+
+The interface returns to the chronological photo timeline and automatically moves to January 15.
+
+```text
+Jan 14
+
+▣ ▣ ▣
+
+
+───────────────
+✦ Possible memory
+
+Jan 15 · Goa
+
+▣ ▣ ▣
+▣ ▣ ▣
+───────────────
+
+
+Jan 16
+
+▣ ▣ ▣
+```
+
+### Step 7
+
+Floating control:
+
+```text
+←        1 of 3        →
+```
+
+The user taps **→**.
+
+The timeline automatically moves to the next possible memory.
+
+That's the complete core MVP.
+
+---
+
+# 16. Important UI rules for Antigravity
+
+Use these as explicit constraints:
+
+1. **Mobile-first design.**
+2. Closely follow the visual simplicity and photo-first nature of Google Photos.
+3. Use **Photos / Search / Library** bottom navigation.
+4. Keep the normal Photos screen mostly unchanged.
+5. Do not create a separate AI dashboard.
+6. Do not use technical AI terminology in the UI.
+7. Photos should occupy most of the screen.
+8. Search should accept conversational descriptions of memories.
+9. Translate the query into simple contextual chips.
+10. Results should represent **moments/memory locations**, not isolated images.
+11. Show multiple photos for each possible moment.
+12. Every result should provide **View memory**.
+13. View Memory should jump into the normal chronological photo timeline.
+14. Preserve photos immediately before and after the matched moment.
+15. Clearly but subtly highlight the located memory.
+16. Provide **Previous Memory / Next Memory** navigation.
+17. Use white, gray and Google-style blue as the primary visual language.
+18. Avoid excessive borders, cards, shadows, gradients, animations and text.
+19. Avoid percentages and technical confidence scores.
+20. The experience should make the user feel like they **remembered where a moment exists in their life**, rather than performed an AI-powered database search.
+
+### Most important product principle
+
+Give Antigravity this sentence separately because it should govern almost every UI decision:
+
+> **The feature should not feel like an AI search engine added to Google Photos. It should feel like Google Photos has learned how to help users navigate their memories.**

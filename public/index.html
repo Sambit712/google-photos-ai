@@ -2,36 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Google Photos — Semantic Memory Discovery & Timeline. Find photos by natural memory clues and relive them on a living timeline.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Google Photos — Locate moments in your personal timeline with natural memory recall.">
+  <meta name="theme-color" content="#ffffff">
   <title>Google Photos</title>
-  
-  <!-- Google Product Fonts -->
+
+  <!-- Google Fonts: Roboto & Google Sans style -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="gp-theme-dark" id="gpAppBodyRoot">
-  <!-- ======================================================================
-       Google Photos Top App Bar
-       ====================================================================== -->
-  <header class="gp-top-app-bar" id="gpTopAppBar">
-    <div class="gp-top-left">
-      <button type="button" class="gp-icon-btn gp-menu-btn" id="btnToggleSidebar" aria-label="Main menu" title="Main menu">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-        </svg>
-      </button>
+<body class="gp-app-root">
 
-      <!-- Authentic Google Photos 4-Color Pinwheel Logo -->
-      <a href="/" class="gp-brand-link" title="Google Photos">
-        <div class="gp-pinwheel-logo">
-          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 0C20 11.0457 11.0457 20 0 20C11.0457 20 20 28.9543 20 40C20 28.9543 28.9543 20 40 20C28.9543 20 20 11.0457 20 0Z" fill="url(#gp-logo-gradient)"/>
+  <!-- Mobile App Frame Container (Clean Google Photos App Shell) -->
+  <div class="gp-app-frame">
+
+    <!-- ====================================================================
+         SCREEN HEADER (Clean, Compact, White)
+         ☰ / icon            Google Photos              [Avatar]
+         ==================================================================== -->
+    <header class="gp-header" id="gpHeader">
+      <div class="gp-header-left">
+        <button type="button" class="gp-icon-btn" id="btnHeaderMenu" aria-label="Menu" title="Menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="gp-header-center">
+        <!-- Google Photos Official 4-Color Pinwheel + Wordmark -->
+        <div class="gp-header-brand" id="brandHomeBtn">
+          <svg class="gp-pinwheel-svg" viewBox="0 0 40 40" width="28" height="28" fill="none">
+            <path d="M20 0C20 11.0457 11.0457 20 0 20C11.0457 20 20 28.9543 20 40C20 28.9543 28.9543 20 40 20C28.9543 20 20 11.0457 20 0Z" fill="url(#gp-brand-grad)"/>
             <defs>
-              <linearGradient id="gp-logo-gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <linearGradient id="gp-brand-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
                 <stop stop-color="#EA4335"/>
                 <stop offset="0.33" stop-color="#FBBC05"/>
                 <stop offset="0.66" stop-color="#34A853"/>
@@ -39,623 +46,302 @@
               </linearGradient>
             </defs>
           </svg>
-        </div>
-        <div class="gp-brand-text">
-          <span class="gp-word-google">Google</span>
-          <span class="gp-word-photos">Photos</span>
-        </div>
-        <span class="gp-ai-pill">AI Memories</span>
-      </a>
-    </div>
-
-    <!-- Centered Google Material Pill Search Bar -->
-    <div class="gp-top-center">
-      <div class="gp-search-pill-container" id="gpSearchPillContainer">
-        <div class="gp-search-leading-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-          </svg>
-        </div>
-        <input 
-          type="text" 
-          id="memorySearchInput" 
-          class="gp-search-input" 
-          placeholder="Search your memories, people, places, or moments (e.g. 'sunset at Baga beach')..." 
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button type="button" class="gp-icon-btn gp-search-clear" id="btnClearSearch" title="Clear search" style="display: none;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
-        </button>
-        <button type="button" class="gp-search-submit-btn" id="btnSubmitSearch">
-          <span>Search</span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Right Header Utilities -->
-    <div class="gp-top-right">
-      <!-- LPU Status Badge -->
-      <div class="gp-lpu-badge" id="engineStatusPill" title="Groq LPU Inference active">
-        <span class="gp-lpu-dot"></span>
-        <span class="gp-lpu-text">Groq LPU</span>
-        <span class="gp-lpu-latency" id="engineLatencyTag">Ready</span>
-      </div>
-
-      <!-- Action Buttons -->
-      <button type="button" class="gp-text-btn" id="btnOpenBenchmark" title="Run 100 Scenarios Quality Evaluation">
-        ⚡ Benchmark (100)
-      </button>
-      <button type="button" class="gp-text-btn" id="btnOpenPrivacy" title="Run Privacy-by-Design & Zero-Trust Audit">
-        🔒 Privacy Audit
-      </button>
-
-      <!-- Theme Toggle (Light / Dark) -->
-      <button type="button" class="gp-icon-btn" id="btnToggleTheme" title="Toggle Light/Dark Theme">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" id="themeIcon">
-          <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
-        </svg>
-      </button>
-
-      <!-- Google Apps 9-Dot Grid Icon -->
-      <button type="button" class="gp-icon-btn" title="Google apps">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-        </svg>
-      </button>
-
-      <!-- Google User Profile Avatar -->
-      <div class="gp-avatar-btn" id="userProfileChip" title="Google Account: Rohan Sharma (rohan.sharma@gmail.com)">
-        <span>R</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- ======================================================================
-       Google Photos App Shell Layout (Sidebar + Content + Date Rail)
-       ====================================================================== -->
-  <div class="gp-app-shell">
-    <!-- Google Photos Left Navigation Drawer -->
-    <aside class="gp-sidebar" id="gpSidebar">
-      <nav class="gp-sidebar-nav">
-        <a href="#" class="gp-nav-item active" data-nav="photos">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Photos</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="explore">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Explore</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="sharing">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Sharing</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="favorites">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Favorites</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="albums">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-7-2h2v-4h4V8h-4V4h-2v4H9v2h4z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Albums</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="utilities">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M7 19h10V4H7v15zm-5-2h4V6H2v11zM18 6v11h4V6h-4z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Utilities</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="archive">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Archive</span>
-        </a>
-
-        <a href="#" class="gp-nav-item" data-nav="trash">
-          <div class="gp-nav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M15 4V3H9v1H4v2h1v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V6h1V4h-5zm2 15H7V6h10v13z"/>
-            </svg>
-          </div>
-          <span class="gp-nav-label">Trash</span>
-        </a>
-      </nav>
-
-      <!-- Google Cloud Storage Bar -->
-      <div class="gp-storage-widget">
-        <div class="gp-storage-header">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/>
-          </svg>
-          <span class="gp-storage-title">Storage</span>
-        </div>
-        <div class="gp-storage-bar-bg">
-          <div class="gp-storage-bar-fill" style="width: 82%;"></div>
-        </div>
-        <div class="gp-storage-text">12.4 GB of 15 GB used</div>
-        <a href="#" class="gp-storage-link">Get more storage</a>
-      </div>
-    </aside>
-
-    <!-- Main Content Canvas Area -->
-    <main class="gp-main-content">
-      <!-- Quick Prompt Pills Bar -->
-      <div class="gp-quick-prompts-row" id="suggestedPromptsBar">
-        <span class="gp-quick-label">Try asking:</span>
-        <button class="gp-filter-pill" data-prompt="those photos from Goa when we went to a café with friends in the evening">
-          ☕ Goa café with friends in evening
-        </button>
-        <button class="gp-filter-pill" data-prompt="watching the sunset at Baga beach with friends">
-          🌅 Sunset at Baga beach
-        </button>
-        <button class="gp-filter-pill" data-prompt="morning walk around the old churches and basilica in Old Goa">
-          🏛️ Old Goa heritage walk
-        </button>
-        <button class="gp-filter-pill" data-prompt="morning filter coffee at home in Bangalore with family">
-          🏠 Morning coffee at home
-        </button>
-      </div>
-
-      <!-- Real-Time Dissected Clue Chips Container -->
-      <div class="gp-clue-chips-wrapper" id="clueChipsContainer" style="display: none;">
-        <span class="gp-clue-label">Dissected Memory Clues:</span>
-        <div class="gp-clue-chips-list" id="clueChipsList">
-          <!-- Populated dynamically via JavaScript -->
+          <span class="gp-brand-title">Google Photos</span>
         </div>
       </div>
 
-      <!-- ==================================================================
-           Google Photos Signature "Memories" Story Strip (Top Highlights)
-           ================================================================== -->
-      <section class="gp-memories-strip-section" aria-label="Recent Highlights">
-        <div class="gp-section-header-compact">
-          <h2 class="gp-memories-title">Memories</h2>
-          <span class="gp-memories-sub">Recent Highlights & Discovered Trips</span>
-        </div>
+      <div class="gp-header-right">
+        <button type="button" class="gp-avatar-btn" id="btnUserAvatar" aria-label="Google Account" title="Google Account">
+          <span class="gp-avatar-img">S</span>
+        </button>
+      </div>
+    </header>
 
-        <div class="gp-memories-carousel" id="memoriesCarousel">
-          <!-- Story Card 1 -->
-          <div class="gp-story-card" data-prompt="those photos from Goa when we went to a café with friends in the evening">
-            <div class="gp-story-backdrop bg-cafe">
-              <span class="gp-story-icon">☕</span>
-            </div>
-            <div class="gp-story-gradient"></div>
-            <div class="gp-story-info">
-              <span class="gp-story-badge">⭐ Highlight</span>
-              <h3 class="gp-story-name">Café Lilliput Evening</h3>
-              <span class="gp-story-date">Nov 17, 2023 · Goa</span>
-            </div>
-          </div>
+    <!-- ====================================================================
+         MAIN APP SCREENS CONTAINER
+         Screen 1: Photos (Timeline & Memories Carousel)
+         Screen 2 & 3: Search & Possible Memory Locations
+         Screen 5: Library
+         ==================================================================== -->
+    <main class="gp-screen-viewport" id="gpScreenViewport">
 
-          <!-- Story Card 2 -->
-          <div class="gp-story-card" data-prompt="watching the sunset at Baga beach with friends">
-            <div class="gp-story-backdrop bg-sunset">
-              <span class="gp-story-icon">🌅</span>
-            </div>
-            <div class="gp-story-gradient"></div>
-            <div class="gp-story-info">
-              <h3 class="gp-story-name">Golden Hour Sunset</h3>
-              <span class="gp-story-date">Nov 16, 2023 · Baga</span>
-            </div>
-          </div>
+      <!-- ================================================================
+           SCREEN 1: PHOTOS (Normal Chronological Gallery & Memories)
+           ================================================================ -->
+      <section class="gp-screen gp-screen-photos active" id="screenPhotos">
 
-          <!-- Story Card 3 -->
-          <div class="gp-story-card" data-prompt="morning walk around the old churches and basilica in Old Goa">
-            <div class="gp-story-backdrop bg-heritage">
-              <span class="gp-story-icon">🏛️</span>
-            </div>
-            <div class="gp-story-gradient"></div>
-            <div class="gp-story-info">
-              <h3 class="gp-story-name">Old Goa Heritage Walk</h3>
-              <span class="gp-story-date">Nov 18, 2023 · Goa</span>
-            </div>
+        <!-- Memories / Highlights Carousel (Vertical Rounded Cards) -->
+        <section class="gp-memories-carousel-section" aria-label="Memories">
+          <div class="gp-memories-carousel" id="memoriesCarousel">
+            <!-- Dynamically populated vertical cards -->
           </div>
+        </section>
 
-          <!-- Story Card 4 -->
-          <div class="gp-story-card" data-prompt="Sunday morning brunch with pastries in Latin Quarter Fontainhas with friends">
-            <div class="gp-story-backdrop bg-brunch">
-              <span class="gp-story-icon">🥐</span>
-            </div>
-            <div class="gp-story-gradient"></div>
-            <div class="gp-story-info">
-              <h3 class="gp-story-name">Fontainhas Latin Brunch</h3>
-              <span class="gp-story-date">Nov 19, 2023 · Panaji</span>
-            </div>
-          </div>
+        <!-- Main Chronological Photo Timeline (3-column photo grid) -->
+        <section class="gp-timeline-stream" id="photosTimelineStream">
+          <!-- Dynamically populated day & moment sections -->
+        </section>
 
-          <!-- Story Card 5 -->
-          <div class="gp-story-card" data-prompt="morning filter coffee at home in Bangalore with family">
-            <div class="gp-story-backdrop bg-home">
-              <span class="gp-story-icon">🏠</span>
-            </div>
-            <div class="gp-story-gradient"></div>
-            <div class="gp-story-info">
-              <h3 class="gp-story-name">Morning Coffee at Home</h3>
-              <span class="gp-story-date">Oct 15, 2023 · Bangalore</span>
-            </div>
-          </div>
-        </div>
       </section>
 
-      <!-- ==================================================================
-           Interactive Semantic Timeline Canvas & Scrubber
-           ================================================================== -->
-      <section class="gp-timeline-section" id="timelineCanvasSection">
-        <div class="gp-timeline-bar-header">
-          <div class="gp-timeline-title-group">
-            <span class="gp-timeline-icon">🧭</span>
-            <div>
-              <h2 class="gp-timeline-title">Chronological Memory Rail</h2>
-              <span class="gp-timeline-sub">Google Photos Temporal Projection</span>
-            </div>
-          </div>
-          <div class="gp-zoom-pill-group">
-            <button class="gp-zoom-pill" data-zoom="year" id="zoomYear">Year</button>
-            <button class="gp-zoom-pill active" data-zoom="trip" id="zoomTrip">Trips</button>
-            <button class="gp-zoom-pill" data-zoom="month" id="zoomMonth">Month</button>
-            <button class="gp-zoom-pill" data-zoom="episode" id="zoomEpisode">Episode</button>
-          </div>
-        </div>
+      <!-- ================================================================
+           SCREEN 2 & 3: SEARCH & POSSIBLE MEMORY LOCATIONS
+           ================================================================ -->
+      <section class="gp-screen gp-screen-search" id="screenSearch">
 
-        <div class="gp-track-wrapper" id="timelineTrackWrapper">
-          <div class="gp-timeline-track" id="timelineTrack">
-            <!-- Year marks -->
-            <div class="gp-track-year" style="left: 6%;">2021</div>
-            <div class="gp-track-year" style="left: 32%;">2022</div>
-            <div class="gp-track-year active" style="left: 65%;">2023</div>
-            <div class="gp-track-year" style="left: 94%;">2024</div>
-
-            <!-- Trip markers -->
-            <div class="gp-trip-marker" style="left: 18%;" title="Trip to Manali (Feb 2022)">
-              🏔️ Manali
-            </div>
-            <div class="gp-trip-marker active-trip" id="goaTripPill" style="left: 74%; width: 14%;" title="Trip to Goa with Friends (Nov 16–20, 2023)">
-              🏖️ Trip to Goa (Nov 2023)
-            </div>
-
-            <!-- Animated Target Anchor Needle -->
-            <div class="gp-anchor-needle" id="timelineAnchorNeedle" style="left: 78.5%;">
-              <div class="gp-needle-flag" id="needleFlag">
-                <span class="needle-date">Nov 17, 2023</span>
-                <span class="needle-title">Café Lilliput Evening</span>
-              </div>
-              <div class="gp-needle-stem"></div>
-              <div class="gp-needle-pip"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================================================================
-           Context Stage: Date Section Header + Primary Anchor Hero Card
-           ================================================================== -->
-      <section class="gp-context-stage" id="contextStageSection">
-        <!-- Google Photos Date Section Sticky Header -->
-        <div class="gp-date-sticky-header">
-          <div class="gp-date-header-left">
-            <button type="button" class="gp-select-circle" title="Select photos on this date">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-              </svg>
+        <!-- Search Input Bar at Top -->
+        <div class="gp-search-header-box">
+          <div class="gp-search-input-wrapper">
+            <svg class="gp-search-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z"/>
+            </svg>
+            <input 
+              type="text" 
+              class="gp-search-input" 
+              id="mainSearchInput" 
+              placeholder="Search your memories" 
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button type="button" class="gp-clear-search-btn" id="btnClearSearch" aria-label="Clear search" style="display: none;">
+              ✕
             </button>
-            <div class="gp-date-text-group">
-              <h2 class="gp-date-title" id="crumbDate">Friday, Nov 17, 2023</h2>
-              <span class="gp-date-location" id="crumbEpisode">Café Lilliput Beachside · Anjuna, Goa</span>
-            </div>
-          </div>
-          <div class="gp-date-header-right">
-            <!-- Breadcrumbs -->
-            <nav class="gp-breadcrumb-row" id="contextBreadcrumbs">
-              <span class="crumb">Library</span>
-              <span class="sep">›</span>
-              <span class="crumb">2023</span>
-              <span class="sep">›</span>
-              <span class="crumb trip-crumb" id="crumbTrip">Trip to Goa with Friends</span>
-            </nav>
           </div>
         </div>
 
-        <!-- Primary Anchor Hero Card (Material 3 Surface) -->
-        <div class="gp-hero-card" id="anchorHeroCard">
-          <div class="gp-hero-photo-wrapper">
-            <div class="gp-hero-render" id="heroImageRender">
-              <div class="gp-hero-art">
-                <span class="gp-hero-icon">☕</span>
-                <span class="gp-hero-venue-pill">Café Lilliput</span>
-              </div>
-              <div class="gp-hero-overlay">
-                <span class="gp-badge-hero">⭐ Hero Anchor Keyframe</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="gp-hero-details">
-            <div class="gp-hero-title-row">
-              <h3 class="gp-anchor-heading" id="anchorTitle">Evening Café & Dinner with Friends in Anjuna</h3>
-              <div class="gp-match-badge" id="confidenceBadge">
-                <span class="sparkle">✨</span>
-                <span id="confidenceText">91% Semantic Match</span>
-              </div>
-            </div>
-
-            <p class="gp-anchor-summary" id="anchorSummary">
-              Relaxing at a beachfront café in Goa with friends, having coffee and dinner in the evening breeze.
-            </p>
-
-            <!-- Context Metadata Grid -->
-            <div class="gp-metadata-card">
-              <div class="gp-meta-col">
-                <span class="gp-meta-label">Location</span>
-                <span class="gp-meta-value" id="metaLocation">📍 Café Lilliput, Anjuna Beach, Goa</span>
-              </div>
-              <div class="gp-meta-col">
-                <span class="gp-meta-label">Solar Time</span>
-                <span class="gp-meta-value" id="metaTime">🌙 Evening · 18:30 – 21:45</span>
-              </div>
-              <div class="gp-meta-col">
-                <span class="gp-meta-label">People Detected</span>
-                <div class="gp-tags-flex" id="metaParticipants">
-                  <span class="gp-tag-chip">👥 Rohan Sharma</span>
-                  <span class="gp-tag-chip">👥 Ananya Roy</span>
-                  <span class="gp-tag-chip">👥 Vikram Mehta</span>
-                </div>
-              </div>
-              <div class="gp-meta-col">
-                <span class="gp-meta-label">Activities</span>
-                <div class="gp-tags-flex" id="metaActivities">
-                  <span class="gp-tag-chip">☕ Café</span>
-                  <span class="gp-tag-chip">🍽️ Dining</span>
-                  <span class="gp-tag-chip">🌊 Beachfront</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Google Photos Telemetry Latency Bar -->
-            <div class="gp-telemetry-bar" id="telemetryStatsStrip">
-              <div class="gp-tele-item">
-                <span class="val" id="teleIntentLatency">28 ms</span>
-                <span class="lbl">Groq LPU Parse</span>
-              </div>
-              <div class="gp-tele-sep">/</div>
-              <div class="gp-tele-item">
-                <span class="val" id="teleRetrievalLatency">1.2 ms</span>
-                <span class="lbl">Hybrid Search</span>
-              </div>
-              <div class="gp-tele-sep">/</div>
-              <div class="gp-tele-item">
-                <span class="val" id="teleTotalLatency">32 ms</span>
-                <span class="lbl">Total SLA</span>
-              </div>
-              <div class="gp-tele-sep">/</div>
-              <div class="gp-tele-item">
-                <span class="val green" id="teleCacheStatus">Fresh</span>
-                <span class="lbl">Cache</span>
-              </div>
-            </div>
+        <!-- Section A: Suggestions (Shown before searching) -->
+        <div class="gp-search-suggestions" id="searchSuggestionsView">
+          <div class="gp-suggestions-label">Try searching for a memory</div>
+          <div class="gp-suggestions-list">
+            <button type="button" class="gp-suggestion-item" data-query="Goa café with friends in the evening">
+              <span class="gp-sugg-icon">☕</span>
+              <span class="gp-sugg-text">Goa café with friends in the evening</span>
+            </button>
+            <button type="button" class="gp-suggestion-item" data-query="Sunset at Baga beach with friends">
+              <span class="gp-sugg-icon">🌅</span>
+              <span class="gp-sugg-text">Sunset at Baga beach</span>
+            </button>
+            <button type="button" class="gp-suggestion-item" data-query="Old Goa church and basilica walk">
+              <span class="gp-sugg-icon">🏛️</span>
+              <span class="gp-sugg-text">Old Goa churches and heritage walk</span>
+            </button>
+            <button type="button" class="gp-suggestion-item" data-query="Latin quarter brunch in Fontainhas">
+              <span class="gp-sugg-icon">🍽️</span>
+              <span class="gp-sugg-text">Latin quarter brunch in Fontainhas</span>
+            </button>
+            <button type="button" class="gp-suggestion-item" data-query="Morning filter coffee at home with family">
+              <span class="gp-sugg-icon">🏠</span>
+              <span class="gp-sugg-text">Morning coffee at home</span>
+            </button>
           </div>
         </div>
 
-        <!-- ==============================================================
-             Meso-Window: Chronological Surrounding Moments
-             ============================================================== -->
-        <section class="gp-surrounding-section" id="surroundingMomentsSection">
-          <div class="gp-section-header">
-            <h3 class="gp-section-title">Surrounding Moments (Meso-Context Window)</h3>
-            <span class="gp-section-caption">Explore adjacent memories before and after this moment</span>
-          </div>
-          <div class="gp-surrounding-grid" id="surroundingCardsStrip">
-            <!-- Dynamic cards injected via JavaScript -->
-          </div>
-        </section>
-
-        <!-- ==============================================================
-             Three-Tier Virtualized Photo Stream (Viewport / Preload / Low-res)
-             As per Google Photos Memory Discovery Architecture
-             ============================================================== -->
-        <section class="gp-photos-stream-section" id="episodeGallerySection">
-          <div class="gp-section-header">
-            <div class="gp-stream-header-left">
-              <h3 class="gp-section-title">
-                Photos in this Episode 
-                <span class="gp-badge-count" id="photoCountBadge">(85 photos)</span>
-              </h3>
-              <span class="gp-section-caption">Three-tier infinite memory stream (Viewport · Preload · Low-res)</span>
-            </div>
-            <div class="gp-stream-tier-toggles">
-              <button type="button" class="gp-tier-btn active" id="btnFilterAllTiers">All Tiers</button>
-              <button type="button" class="gp-tier-btn tier-blue" id="btnFilterViewport">Viewport</button>
-              <button type="button" class="gp-tier-btn tier-pink" id="btnFilterPreload">Preload</button>
-              <button type="button" class="gp-tier-btn tier-orange" id="btnFilterLowRes">Low res</button>
+        <!-- Section B: Search Results View (I understood + Moments found) -->
+        <div class="gp-search-results-view" id="searchResultsView" style="display: none;">
+          
+          <!-- "I understood" Clue Interpretation Area -->
+          <div class="gp-understood-box" id="understoodBox">
+            <span class="gp-understood-label">I understood</span>
+            <div class="gp-clue-chips-row" id="understoodChipsList">
+              <!-- Dynamically populated clue chips: [ Goa ] [ Café ] [ Friends ] [ Evening ] -->
             </div>
           </div>
 
-          <!-- Chrome Browser Window Shell & Architecture Bracket Container -->
-          <div class="gp-arch-container" id="gpArchContainer">
-            <!-- Chrome Browser Frame -->
-            <div class="gp-chrome-window">
-              <!-- Chrome Window Header -->
-              <div class="gp-chrome-topbar">
-                <div class="gp-traffic-dots">
-                  <span class="gp-dot dot-red"></span>
-                  <span class="gp-dot dot-yellow"></span>
-                  <span class="gp-dot dot-green"></span>
-                </div>
-                <div class="gp-chrome-nav">
-                  <button type="button" class="gp-nav-arrow" title="Back">←</button>
-                  <button type="button" class="gp-nav-arrow" title="Forward">→</button>
-                  <button type="button" class="gp-nav-arrow" title="Reload">↻</button>
-                </div>
-                <div class="gp-chrome-omnibox">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z"/>
-                  </svg>
-                  <span class="gp-url-text">https://photos.google.com/memory/timeline</span>
-                  <span class="gp-menu-dots">⋮</span>
-                </div>
-              </div>
+          <!-- Results Headline (e.g., "3 possible memory locations") -->
+          <div class="gp-results-header">
+            <h2 class="gp-results-count" id="resultsCountHeading">3 possible memory locations</h2>
+          </div>
 
-              <!-- Stream Wrapper containing all 3 tiers -->
-              <div class="gp-stream-viewport-window" id="gpStreamWindow">
-                <!-- TIER 1: VIEWPORT (Active High-Res) -->
-                <div class="gp-tier-group tier-viewport" id="tierViewportGroup">
-                  <div class="gp-tier-header">
-                    <span class="gp-tier-tag blue">Viewport (Active Display)</span>
-                    <span class="gp-tier-desc">Full-resolution 4K/HDR textures decoded on GPU</span>
-                  </div>
-                  <div class="gp-justified-mosaic" id="photosMasonryGrid">
-                    <!-- Dynamic Justified Photos -->
-                  </div>
-                </div>
+          <!-- List of Memory Moment Cards -->
+          <div class="gp-memory-moments-list" id="memoryMomentsList">
+            <!-- Dynamically populated moments -->
+          </div>
 
-                <!-- TIER 2: PRELOAD (Background Buffer) -->
-                <div class="gp-tier-group tier-preload" id="tierPreloadGroup">
-                  <div class="gp-tier-header">
-                    <span class="gp-tier-tag pink">Preload (Next in Stream)</span>
-                    <span class="gp-tier-desc">Adjacent moments pre-fetched & decoded in idle background</span>
-                  </div>
-                  <div class="gp-justified-mosaic" id="photosPreloadGrid">
-                    <!-- Preloaded Justified Photos -->
-                  </div>
-                </div>
-
-                <!-- TIER 3: LOW RES (Pixelated Blurhash Virtualized Placeholder) -->
-                <div class="gp-tier-group tier-lowres" id="tierLowResGroup">
-                  <div class="gp-tier-header">
-                    <span class="gp-tier-tag orange">Low res (Virtualized Placeholder)</span>
-                    <span class="gp-tier-desc">Pixelated blurhash geometry preserving 60fps infinite scroll</span>
-                  </div>
-                  <div class="gp-justified-mosaic" id="photosLowResGrid">
-                    <!-- Low-res Pixelated Mosaic Photos -->
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Architectural Right Brackets (as in user diagram) -->
-            <div class="gp-arch-brackets-rail" id="gpArchBracketsRail">
-              <div class="gp-bracket-block bracket-viewport">
-                <div class="bracket-line blue"></div>
-                <div class="bracket-label blue">Viewport</div>
-              </div>
-              <div class="gp-bracket-block bracket-preload">
-                <div class="bracket-line pink"></div>
-                <div class="bracket-label pink">Preload</div>
-              </div>
-              <div class="gp-bracket-block bracket-lowres">
-                <div class="bracket-line orange"></div>
-                <div class="bracket-label orange">Low res</div>
-              </div>
+          <!-- Progressive Memory Recall ("Add another detail") -->
+          <div class="gp-refine-box" id="refineMemoryBox">
+            <div class="gp-refine-title">Add another detail to refine</div>
+            <div class="gp-refine-chips">
+              <button type="button" class="gp-refine-chip" data-type="place">+ Place</button>
+              <button type="button" class="gp-refine-chip" data-type="people">+ People</button>
+              <button type="button" class="gp-refine-chip" data-type="activity">+ Activity</button>
+              <button type="button" class="gp-refine-chip" data-type="time">+ Time of day</button>
             </div>
           </div>
-        </section>
 
-        <!-- Alternative Candidate Memories Section -->
-        <section class="gp-alternatives-section" id="alternativeAnchorsSection" style="display: none;">
-          <div class="gp-section-header">
-            <h3 class="gp-section-title">Related Memories Found</h3>
+        </div>
+
+        <!-- Section C: Empty / Unsuccessful Search State -->
+        <div class="gp-empty-search-view" id="emptySearchView" style="display: none;">
+          <div class="gp-empty-icon">🧭</div>
+          <h3 class="gp-empty-title">We couldn't find that memory yet.</h3>
+          <p class="gp-empty-desc">Try adding another detail to help locate it in your timeline:</p>
+          <div class="gp-empty-prompts-grid">
+            <button type="button" class="gp-empty-pill" data-hint="place">📍 Where was it?</button>
+            <button type="button" class="gp-empty-pill" data-hint="people">👥 Who were you with?</button>
+            <button type="button" class="gp-empty-pill" data-hint="activity">✨ What were you doing?</button>
+            <button type="button" class="gp-empty-pill" data-hint="time">🕒 Roughly when was it?</button>
           </div>
-          <div class="gp-alternatives-grid" id="alternativesList">
-            <!-- Dynamic alternative cards -->
-          </div>
-        </section>
+        </div>
+
       </section>
+
+      <!-- ================================================================
+           SCREEN 5: LIBRARY (Albums & Collections)
+           ================================================================ -->
+      <section class="gp-screen gp-screen-library" id="screenLibrary">
+        <div class="gp-library-header">
+          <h1 class="gp-library-title">Library</h1>
+        </div>
+
+        <!-- Utility shortcuts -->
+        <div class="gp-library-shortcuts">
+          <button type="button" class="gp-shortcut-btn">
+            <span class="gp-shortcut-icon">⭐</span>
+            <span class="gp-shortcut-text">Favorites</span>
+          </button>
+          <button type="button" class="gp-shortcut-btn">
+            <span class="gp-shortcut-icon">🗂️</span>
+            <span class="gp-shortcut-text">Utilities</span>
+          </button>
+          <button type="button" class="gp-shortcut-btn">
+            <span class="gp-shortcut-icon">📦</span>
+            <span class="gp-shortcut-text">Archive</span>
+          </button>
+          <button type="button" class="gp-shortcut-btn">
+            <span class="gp-shortcut-icon">🗑️</span>
+            <span class="gp-shortcut-text">Trash</span>
+          </button>
+        </div>
+
+        <!-- Albums Section -->
+        <div class="gp-albums-section">
+          <h2 class="gp-albums-heading">Albums</h2>
+          <div class="gp-albums-grid">
+            <div class="gp-album-card" id="albumGoa">
+              <div class="gp-album-thumb" style="background-image: url('https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=400&q=80');"></div>
+              <div class="gp-album-info">
+                <div class="gp-album-title">Trip to Goa with Friends</div>
+                <div class="gp-album-count">420 photos · Nov 2023</div>
+              </div>
+            </div>
+            <div class="gp-album-card">
+              <div class="gp-album-thumb" style="background-image: url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=400&q=80');"></div>
+              <div class="gp-album-info">
+                <div class="gp-album-title">Café Days & Hangouts</div>
+                <div class="gp-album-count">85 photos</div>
+              </div>
+            </div>
+            <div class="gp-album-card">
+              <div class="gp-album-thumb" style="background-image: url('https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=400&q=80');"></div>
+              <div class="gp-album-info">
+                <div class="gp-album-title">Sunsets & Beaches</div>
+                <div class="gp-album-count">64 photos</div>
+              </div>
+            </div>
+            <div class="gp-album-card">
+              <div class="gp-album-thumb" style="background-image: url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=80');"></div>
+              <div class="gp-album-info">
+                <div class="gp-album-title">Home & Family</div>
+                <div class="gp-album-count">112 photos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
 
-    <!-- Google Photos Vertical Fast-Scroll Date Rail -->
-    <aside class="gp-timeline-rail" id="gpTimelineRail" title="Fast Scroll by Date">
-      <div class="gp-rail-tick active">2024</div>
-      <div class="gp-rail-tick">2023</div>
-      <div class="gp-rail-tick active-month">Nov</div>
-      <div class="gp-rail-tick">Oct</div>
-      <div class="gp-rail-tick">2022</div>
-      <div class="gp-rail-tick">2021</div>
-      <!-- Floating Pin Indicator -->
-      <div class="gp-rail-thumb" id="gpRailThumb" style="top: 36%;">
-        <div class="gp-rail-flag">Nov '23</div>
-      </div>
-    </aside>
+    <!-- ====================================================================
+         FLOATING MEMORY NAVIGATOR (Screen 4 Interaction)
+         Appears when user jumps into timeline from "View memory →"
+         ← Previous memory       1 of 3       Next memory →
+         ==================================================================== -->
+    <div class="gp-floating-memory-navigator" id="memoryNavigator" style="display: none;">
+      <button type="button" class="gp-nav-pill-btn" id="btnPrevMemory" aria-label="Previous memory">
+        ← Previous memory
+      </button>
+      <span class="gp-nav-pill-counter" id="memoryCounterText">1 of 3</span>
+      <button type="button" class="gp-nav-pill-btn" id="btnNextMemory" aria-label="Next memory">
+        Next memory →
+      </button>
+      <button type="button" class="gp-nav-pill-close" id="btnCloseNavigator" aria-label="Dismiss memory navigation" title="Dismiss">
+        ✕
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         BOTTOM NAVIGATION BAR (Exactly 3 destinations)
+         Photos             Search             Library
+           ▣                  ⌕                  ▥
+         ==================================================================== -->
+    <nav class="gp-bottom-nav" id="gpBottomNav">
+      <button type="button" class="gp-nav-tab active" data-tab="photos" id="tabPhotos">
+        <div class="gp-tab-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+          </svg>
+        </div>
+        <span class="gp-tab-label">Photos</span>
+      </button>
+
+      <button type="button" class="gp-nav-tab" data-tab="search" id="tabSearch">
+        <div class="gp-tab-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z"/>
+          </svg>
+        </div>
+        <span class="gp-tab-label">Search</span>
+      </button>
+
+      <button type="button" class="gp-nav-tab" data-tab="library" id="tabLibrary">
+        <div class="gp-tab-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-7-2h2v-4h4V8h-4V4h-2v4H9v2h4z"/>
+          </svg>
+        </div>
+        <span class="gp-tab-label">Library</span>
+      </button>
+    </nav>
+
   </div>
 
   <!-- ======================================================================
-       Google Photos Lightbox Modal (Full-Screen Reliving)
+       PHOTO VIEWER MODAL (Screen 13: Fullscreen, Simple, Photo-First)
+       ←                             ⋮
+       [ LARGE PHOTO ]
+       Jan 15, 2024
+       Goa
+       Café · Friends · Evening
        ====================================================================== -->
-  <div class="gp-lightbox-modal" id="lightboxModal" style="display: none;">
-    <div class="gp-lightbox-backdrop" id="lightboxBackdrop"></div>
-    <div class="gp-lightbox-frame">
-      <div class="gp-lightbox-topbar">
-        <button type="button" class="gp-icon-btn gp-lightbox-btn" id="lightboxClose" title="Close (Esc)">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+  <div class="gp-photo-viewer" id="photoViewerModal" style="display: none;">
+    <div class="gp-viewer-topbar">
+      <button type="button" class="gp-viewer-btn" id="btnViewerBack" aria-label="Back">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
+      <div class="gp-viewer-topbar-actions">
+        <button type="button" class="gp-viewer-btn" aria-label="Share">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
           </svg>
         </button>
-        <div class="gp-lightbox-title" id="lightboxCaption">Captured Memory Moment</div>
-        <div class="gp-lightbox-actions">
-          <button type="button" class="gp-icon-btn gp-lightbox-btn" title="Favorite">⭐</button>
-          <button type="button" class="gp-icon-btn gp-lightbox-btn" title="Share">🔗</button>
-          <button type="button" class="gp-icon-btn gp-lightbox-btn" title="Info">ℹ️</button>
-        </div>
-      </div>
-      <div class="gp-lightbox-stage" id="lightboxImageContainer">
-        <!-- Rendered dynamically -->
+        <button type="button" class="gp-viewer-btn" aria-label="More options">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+        </button>
       </div>
     </div>
-  </div>
 
-  <!-- ======================================================================
-       Evaluation & Privacy Audit Modal
-       ====================================================================== -->
-  <div class="eval-modal" id="evalModal" style="display: none;">
-    <div class="eval-backdrop" id="evalBackdrop"></div>
-    <div class="eval-modal-window">
-      <div class="eval-modal-header">
-        <div class="eval-title-group">
-          <h2 class="eval-modal-title" id="evalModalTitle">Evaluation & Privacy Audit</h2>
-          <span class="eval-modal-subtitle" id="evalModalSubtitle">Phase 5 Production Readiness Verification</span>
-        </div>
-        <button type="button" class="eval-modal-close" id="evalModalClose">&times;</button>
-      </div>
-      <div class="eval-modal-body" id="evalModalBody">
-        <div class="eval-loading" id="evalLoading">
-          <div class="spin-icon">⏳</div>
-          <span>Executing automated verification suite...</span>
-        </div>
-        <div class="eval-content-view" id="evalContentView" style="display: none;"></div>
-      </div>
+    <div class="gp-viewer-main-image-wrap">
+      <img id="viewerMainImage" class="gp-viewer-img" src="" alt="Photo" />
+    </div>
+
+    <div class="gp-viewer-caption-bar">
+      <div class="gp-viewer-date" id="viewerDate">Jan 15, 2024</div>
+      <div class="gp-viewer-location" id="viewerLocation">Goa</div>
+      <div class="gp-viewer-context" id="viewerContext">Café · Friends · Evening</div>
     </div>
   </div>
 
