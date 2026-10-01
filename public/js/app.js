@@ -1,666 +1,432 @@
 /**
- * Google Photos — Semantic Memory Locator Client Controller
- * Built strictly according to docs/UI.txt
+ * Google Photos — Semantic Photo Locator
+ * Interaction: SEARCH → HIGHLIGHT → EXPLORE CONTEXT → NEXT MATCH
  *
- * Implements:
- * - Screen 1: Photos Home (Memories carousel + 3-col Chronological Timeline)
- * - Screen 2: Search (Suggestions + Conversational Query + "I understood" chips)
- * - Screen 3: Possible Memory Locations (Moments found + Preview strips + "View memory →")
- * - Screen 4: Memory Locator (Timeline jump + Subtle highlight + Surrounding photos preserved + Floating navigator)
- * - Screen 5: Library
- * - Screen 13: Fullscreen Photo Viewer
- * - Screen 14: Progressive Memory Refinement ("Add another detail")
+ * Core rule from spec (Section 4):
+ *   The entire chronological timeline ALWAYS stays visible.
+ *   Matching photos are highlighted IN-PLACE.
+ *   NEXT/PREV scrolls between matching photos.
+ *   The timeline is NEVER filtered down to only matching photos.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
   // ==========================================================================
-  // CURATED TIMELINE & MEMORY DATASET (Historical Timeline with Surrounding Context)
+  // PHOTO DATASET — Full chronological timeline with semantic tags
+  // Tags are conceptual, not shown during normal browsing (Section 3)
   // ==========================================================================
-  const TIMELINE_DATA = [
-    {
-      id: 'ep_goa_checkin',
-      dateStr: 'Nov 16, 2023',
-      timeOfDay: 'Afternoon',
-      location: 'Panaji, Goa',
-      venue: 'Heritage Villa Stay',
-      contextTags: ['Travel', 'Arrival', 'Villa', 'Pool'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80', caption: 'Villa courtyard pool in morning sun' },
-        { url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80', caption: 'Tropical garden lounge chairs' },
-        { url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80', caption: 'Arriving with friends and luggage at the villa' }
-      ]
-    },
-    {
-      id: 'ep_baga_sunset',
-      dateStr: 'Nov 16, 2023',
-      timeOfDay: 'Sunset',
-      location: 'Baga Beach, Goa',
-      venue: 'Baga Shoreline',
-      contextTags: ['Sunset', 'Beach', 'Friends', 'Golden Hour'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80', caption: 'Golden sunset over the Arabian Sea at Baga' },
-        { url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=600&q=80', caption: 'Walking along the warm ocean shoreline' },
-        { url: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80', caption: 'Palm silhouettes glowing in evening orange light' }
-      ]
-    },
-    {
-      id: 'ep_curlies_night',
-      dateStr: 'Nov 16, 2023',
-      timeOfDay: 'Night',
-      location: 'Anjuna Beach, Goa',
-      venue: 'Curlies Beach Shack',
-      contextTags: ['Café', 'Music', 'Nightlife', 'Friends'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80', caption: 'Beach shack illuminated with fairy lights and music' },
-        { url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80', caption: 'Acoustic evening band performing for the crowd' },
-        { url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80', caption: 'Friends enjoying the warm seaside night' }
-      ]
-    },
-    {
-      id: 'ep_anjuna_flea_market',
-      dateStr: 'Nov 17, 2023',
-      timeOfDay: 'Morning',
-      location: 'Anjuna, Goa',
-      venue: 'Anjuna Flea Market',
-      contextTags: ['Walk', 'Shopping', 'Handicrafts', 'Friends'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=600&q=80', caption: 'Colorful spices and crafts under canopy tents' },
-        { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80', caption: 'Morning market stroll with handmade jewelry' },
-        { url: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=600&q=80', caption: 'Artisan souvenirs and friendly market vendors' }
-      ]
-    },
-    {
-      id: 'ep_anjuna_cafe_evening',
-      dateStr: 'Nov 17, 2023',
-      timeOfDay: 'Evening',
-      location: 'Anjuna Beach, Goa',
-      venue: 'Café Lilliput',
-      contextTags: ['Café', 'Dinner', 'Friends', 'Evening'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80', caption: 'Beachside café table with evening dinner and drinks' },
-        { url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80', caption: 'Cozy café lighting and coffee mugs with sea breeze' },
-        { url: 'https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&w=600&q=80', caption: 'Laughing with friends around dinner table at dusk' }
-      ]
-    },
-    {
-      id: 'ep_old_goa_heritage',
-      dateStr: 'Nov 18, 2023',
-      timeOfDay: 'Morning',
-      location: 'Velha Goa',
-      venue: 'Basilica of Bom Jesus',
-      contextTags: ['Architecture', 'Churches', 'Walk', 'History'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=600&q=80', caption: 'Historic Portuguese colonial basilica in morning light' },
-        { url: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=600&q=80', caption: 'Ancient stone archways and church bell tower' },
-        { url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80', caption: 'Sunny heritage walk along Old Goa cobbled street' }
-      ]
-    },
-    {
-      id: 'ep_panaji_brunch',
-      dateStr: 'Nov 18, 2023',
-      timeOfDay: 'Afternoon',
-      location: 'Fontainhas, Panaji',
-      venue: 'Latin Quarter Heritage Café',
-      contextTags: ['Brunch', 'Café', 'Pastries', 'Friends'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80', caption: 'Freshly baked pastries and cold brew at boutique cafe' },
-        { url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', caption: 'Vibrant yellow and blue Portuguese heritage houses' },
-        { url: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=600&q=80', caption: 'Enjoying Latin Quarter brunch with friends' }
-      ]
-    },
-    {
-      id: 'ep_bangalore_coffee',
-      dateStr: 'Nov 25, 2023',
-      timeOfDay: 'Morning',
-      location: 'Bangalore, Karnataka',
-      venue: 'Home Balcony',
-      contextTags: ['Coffee', 'Home', 'Family', 'Morning'],
-      photos: [
-        { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80', caption: 'Traditional hot filter coffee in stainless steel dabara' },
-        { url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=600&q=80', caption: 'Quiet morning reading on sunny balcony with house plants' },
-        { url: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80', caption: 'Golden morning light filtering through living room' }
-      ]
-    }
+  const PHOTO_DB = [
+    // Nov 14, 2023 — Bangalore (before trip)
+    { id: 'p001', date: '2023-11-14', dateStr: 'Nov 14, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&q=80', tags: ['home','coffee','morning','family'] },
+    { id: 'p002', date: '2023-11-14', dateStr: 'Nov 14, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=400&q=80', tags: ['home','balcony','morning','family'] },
+    { id: 'p003', date: '2023-11-14', dateStr: 'Nov 14, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1543362906-acfc16c67564?auto=format&fit=crop&w=400&q=80', tags: ['street','city','evening'] },
+    { id: 'p004', date: '2023-11-14', dateStr: 'Nov 14, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=400&q=80', tags: ['market','afternoon'] },
+    { id: 'p005', date: '2023-11-14', dateStr: 'Nov 14, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=80', tags: ['coffee','café','friends','afternoon'] },
+    { id: 'p006', date: '2023-11-14', dateStr: 'Nov 14, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=400&q=80', tags: ['café','friends','pastry','evening'] },
+
+    // Nov 15, 2023 — Travel to Goa
+    { id: 'p007', date: '2023-11-15', dateStr: 'Nov 15, 2023', loc: 'Bangalore Airport', url: 'https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=400&q=80', tags: ['travel','airport','morning','goa'] },
+    { id: 'p008', date: '2023-11-15', dateStr: 'Nov 15, 2023', loc: 'In Flight', url: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&q=80', tags: ['travel','flight','morning','goa'] },
+    { id: 'p009', date: '2023-11-15', dateStr: 'Nov 15, 2023', loc: 'Panaji, Goa', url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80', tags: ['goa','villa','afternoon','travel','friends'] },
+    { id: 'p010', date: '2023-11-15', dateStr: 'Nov 15, 2023', loc: 'Panaji, Goa', url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80', tags: ['goa','hotel','pool','afternoon','friends'] },
+    { id: 'p011', date: '2023-11-15', dateStr: 'Nov 15, 2023', loc: 'Baga Beach, Goa', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80', tags: ['goa','beach','sunset','friends','travel'] },
+    { id: 'p012', date: '2023-11-15', dateStr: 'Nov 15, 2023', loc: 'Baga Beach, Goa', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=400&q=80', tags: ['goa','beach','waves','evening','friends'] },
+
+    // Nov 16, 2023 — Goa Day 1 (Anjuna Flea Market)
+    { id: 'p013', date: '2023-11-16', dateStr: 'Nov 16, 2023', loc: 'Anjuna, Goa', url: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=400&q=80', tags: ['goa','morning','beach','light'] },
+    { id: 'p014', date: '2023-11-16', dateStr: 'Nov 16, 2023', loc: 'Anjuna, Goa', url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80', tags: ['goa','market','crafts','morning','friends'] },
+    { id: 'p015', date: '2023-11-16', dateStr: 'Nov 16, 2023', loc: 'Anjuna, Goa', url: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=400&q=80', tags: ['goa','market','shopping','afternoon'] },
+    { id: 'p016', date: '2023-11-16', dateStr: 'Nov 16, 2023', loc: 'Café Lilliput, Anjuna', url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80', tags: ['goa','café','friends','evening','dinner','beach'] },
+    { id: 'p017', date: '2023-11-16', dateStr: 'Nov 16, 2023', loc: 'Café Lilliput, Anjuna', url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=400&q=80', tags: ['goa','café','coffee','evening','friends'] },
+    { id: 'p018', date: '2023-11-16', dateStr: 'Nov 16, 2023', loc: 'Curlies, Anjuna', url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=400&q=80', tags: ['goa','nightlife','music','beach','friends','night'] },
+
+    // Nov 17, 2023 — Goa Day 2 (Heritage & Café Evening)
+    { id: 'p019', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Old Goa', url: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=400&q=80', tags: ['goa','heritage','church','morning','travel'] },
+    { id: 'p020', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Old Goa', url: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=400&q=80', tags: ['goa','architecture','history','morning'] },
+    { id: 'p021', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Fontainhas, Panaji', url: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=400&q=80', tags: ['goa','café','brunch','friends','afternoon','lunch'] },
+    { id: 'p022', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Fontainhas, Panaji', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80', tags: ['goa','street','walking','afternoon','friends'] },
+    { id: 'p023', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Calangute Beach, Goa', url: 'https://images.unsplash.com/photo-1542397284385-6010376c5337?auto=format&fit=crop&w=400&q=80', tags: ['goa','beach','sunset','evening','friends'] },
+    { id: 'p024', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Calangute Beach, Goa', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=401&q=80', tags: ['goa','beach','water','sunset','evening'] },
+    { id: 'p025', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Shacks, Calangute Goa', url: 'https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&w=400&q=80', tags: ['goa','café','dinner','friends','evening','beach'] },
+    { id: 'p026', date: '2023-11-17', dateStr: 'Nov 17, 2023', loc: 'Shacks, Calangute Goa', url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=401&q=80', tags: ['goa','café','night','friends','food'] },
+
+    // Nov 18, 2023 — Goa Day 3 (Departure)
+    { id: 'p027', date: '2023-11-18', dateStr: 'Nov 18, 2023', loc: 'Anjuna Beach, Goa', url: 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?auto=format&fit=crop&w=400&q=80', tags: ['goa','beach','morning','water','last day'] },
+    { id: 'p028', date: '2023-11-18', dateStr: 'Nov 18, 2023', loc: 'Anjuna Beach, Goa', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=401&q=80', tags: ['goa','beach','swimming','morning','friends'] },
+    { id: 'p029', date: '2023-11-18', dateStr: 'Nov 18, 2023', loc: 'Goa Airport', url: 'https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=401&q=80', tags: ['goa','airport','travel','afternoon'] },
+    { id: 'p030', date: '2023-11-18', dateStr: 'Nov 18, 2023', loc: 'Back Home', url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=401&q=80', tags: ['home','coffee','evening','family'] },
+
+    // Dec 2023 — Home / City
+    { id: 'p031', date: '2023-12-04', dateStr: 'Dec 4, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=400&q=80', tags: ['city','evening','friends'] },
+    { id: 'p032', date: '2023-12-04', dateStr: 'Dec 4, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=401&q=80', tags: ['café','friends','afternoon','hangout'] },
+    { id: 'p033', date: '2023-12-04', dateStr: 'Dec 4, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=401&q=80', tags: ['café','coffee','evening','alone'] },
+
+    // Dec 25, 2023 — Christmas
+    { id: 'p034', date: '2023-12-25', dateStr: 'Dec 25, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1449495169669-7b118f960251?auto=format&fit=crop&w=400&q=80', tags: ['christmas','family','celebration','evening'] },
+    { id: 'p035', date: '2023-12-25', dateStr: 'Dec 25, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80', tags: ['christmas','dinner','family','night'] },
+    { id: 'p036', date: '2023-12-25', dateStr: 'Dec 25, 2023', loc: 'Bangalore', url: 'https://images.unsplash.com/photo-1418985991508-e47386d96a71?auto=format&fit=crop&w=400&q=80', tags: ['christmas','celebration','friends','night'] },
   ];
 
-  // Memories / Highlights Row Data
-  const HIGHLIGHTS_DATA = [
-    { label: 'Goa Trip', episodeId: 'ep_anjuna_cafe_evening', img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=80' },
-    { label: 'Sunset Glow', episodeId: 'ep_baga_sunset', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=80' },
-    { label: 'Café Days', episodeId: 'ep_curlies_night', img: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=300&q=80' },
-    { label: 'Heritage Walk', episodeId: 'ep_old_goa_heritage', img: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=300&q=80' },
-    { label: 'College Friends', episodeId: 'ep_panaji_brunch', img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=300&q=80' },
-    { label: '1 Year Ago', episodeId: 'ep_bangalore_coffee', img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=300&q=80' }
-  ];
-
-  // DOM Elements
-  const tabPhotos = document.getElementById('tabPhotos');
-  const tabSearch = document.getElementById('tabSearch');
-  const tabLibrary = document.getElementById('tabLibrary');
-  const screenPhotos = document.getElementById('screenPhotos');
-  const screenSearch = document.getElementById('screenSearch');
-  const screenLibrary = document.getElementById('screenLibrary');
-  const brandHomeBtn = document.getElementById('brandHomeBtn');
-
-  // Memories Carousel & Timeline
-  const memoriesCarousel = document.getElementById('memoriesCarousel');
-  const photosTimelineStream = document.getElementById('photosTimelineStream');
-
-  // Search Elements
-  const mainSearchInput = document.getElementById('mainSearchInput');
-  const btnClearSearch = document.getElementById('btnClearSearch');
-  const searchSuggestionsView = document.getElementById('searchSuggestionsView');
-  const searchResultsView = document.getElementById('searchResultsView');
-  const emptySearchView = document.getElementById('emptySearchView');
-  const understoodChipsList = document.getElementById('understoodChipsList');
-  const resultsCountHeading = document.getElementById('resultsCountHeading');
-  const memoryMomentsList = document.getElementById('memoryMomentsList');
-
-  // Floating Memory Navigator
-  const memoryNavigator = document.getElementById('memoryNavigator');
-  const btnPrevMemory = document.getElementById('btnPrevMemory');
-  const btnNextMemory = document.getElementById('btnNextMemory');
-  const memoryCounterText = document.getElementById('memoryCounterText');
-  const btnCloseNavigator = document.getElementById('btnCloseNavigator');
-
-  // Photo Viewer Modal
-  const photoViewerModal = document.getElementById('photoViewerModal');
-  const btnViewerBack = document.getElementById('btnViewerBack');
-  const viewerMainImage = document.getElementById('viewerMainImage');
-  const viewerDate = document.getElementById('viewerDate');
-  const viewerLocation = document.getElementById('viewerLocation');
-  const viewerContext = document.getElementById('viewerContext');
-
-  // State Management
-  let activeTab = 'photos';
-  let activeMatchedMoments = [];
-  let currentNavIndex = 0;
+  // ==========================================================================
+  // DOM REFS
+  // ==========================================================================
+  const searchInput     = document.getElementById('searchInput');
+  const btnClearSearch  = document.getElementById('btnClearSearch');
+  const searchInfoBar   = document.getElementById('searchInfoBar');
+  const searchInfoText  = document.getElementById('searchInfoText');
+  const searchTagsRow   = document.getElementById('searchTagsRow');
+  const searchTagsList  = document.getElementById('searchTagsList');
+  const suggestionsOverlay = document.getElementById('suggestionsOverlay');
+  const gpTimeline      = document.getElementById('gpTimeline');
+  const matchNavigator  = document.getElementById('matchNavigator');
+  const btnPrevMatch    = document.getElementById('btnPrevMatch');
+  const btnNextMatch    = document.getElementById('btnNextMatch');
+  const navCounter      = document.getElementById('navCounter');
+  const photoViewer     = document.getElementById('photoViewer');
+  const btnViewerClose  = document.getElementById('btnViewerClose');
+  const viewerImg       = document.getElementById('viewerImg');
+  const viewerDate      = document.getElementById('viewerDate');
+  const viewerLoc       = document.getElementById('viewerLoc');
+  const viewerTags      = document.getElementById('viewerTags');
+  const btnGoHome       = document.getElementById('btnGoHome');
 
   // ==========================================================================
-  // INITIALIZATION & RENDERING
+  // STATE
   // ==========================================================================
+  let activeQuery   = '';           // normalized current search query
+  let activeTerms   = [];           // individual search terms
+  let matchIds      = [];           // IDs of all matching photos (in order)
+  let currentMatchIdx = 0;          // index into matchIds for current highlighted
 
-  function init() {
-    renderMemoriesCarousel();
-    renderTimelineStream();
-    setupNavigationTabs();
-    setupSearchInteractions();
-    setupMemoryNavigator();
-    setupPhotoViewer();
-  }
-
-  // 1. Render Memories / Highlights Carousel (Vertical Rounded Cards)
-  function renderMemoriesCarousel() {
-    memoriesCarousel.innerHTML = '';
-    HIGHLIGHTS_DATA.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'gp-memory-card';
-      card.innerHTML = `
-        <img class="gp-memory-card-bg" src="${item.img}" alt="${item.label}" loading="lazy" />
-        <div class="gp-memory-card-gradient"></div>
-        <div class="gp-memory-card-label">${item.label}</div>
-      `;
-      card.addEventListener('click', () => {
-        jumpToTimelineMoment(item.episodeId);
-      });
-      memoriesCarousel.appendChild(card);
+  // ==========================================================================
+  // BUILD & RENDER FULL CHRONOLOGICAL TIMELINE
+  // (Called once on load — photos stay here permanently, never removed)
+  // ==========================================================================
+  function buildTimeline() {
+    // Group photos by date
+    const groups = {};
+    PHOTO_DB.forEach(p => {
+      if (!groups[p.date]) {
+        groups[p.date] = { dateStr: p.dateStr, loc: p.loc, photos: [] };
+      }
+      groups[p.date].photos.push(p);
     });
-  }
 
-  // 2. Render Main Chronological Photo Timeline (3-column photo grid)
-  function renderTimelineStream() {
-    photosTimelineStream.innerHTML = '';
-
-    TIMELINE_DATA.forEach(group => {
+    Object.keys(groups).sort().forEach(date => {
+      const g = groups[date];
       const groupEl = document.createElement('div');
-      groupEl.className = 'gp-timeline-group';
-      groupEl.id = `group-${group.id}`;
+      groupEl.className = 'gp-group';
+      groupEl.id = `grp-${date}`;
 
-      groupEl.innerHTML = `
-        <div class="gp-group-header">
-          <span class="gp-group-date">${group.dateStr}</span>
-          <span class="gp-group-location">${group.location} · ${group.venue}</span>
-        </div>
-        <div class="gp-photo-grid-3col">
-          ${group.photos.map(p => `
-            <div class="gp-photo-item" data-src="${p.url}" data-caption="${p.caption}" data-date="${group.dateStr}" data-loc="${group.location}" data-ctx="${group.contextTags.join(' · ')}">
-              <img class="gp-photo-img" src="${p.url}" alt="${p.caption}" loading="lazy" />
-            </div>
-          `).join('')}
-        </div>
+      // Date + Location header
+      const head = document.createElement('div');
+      head.className = 'gp-group-head';
+      head.innerHTML = `
+        <span class="gp-group-date">${g.dateStr}</span>
+        <span class="gp-group-loc">${g.loc}</span>
       `;
+      groupEl.appendChild(head);
 
-      // Click to open photo in viewer
-      groupEl.querySelectorAll('.gp-photo-item').forEach(item => {
-        item.addEventListener('click', () => {
-          openPhotoViewer({
-            url: item.dataset.src,
-            caption: item.dataset.caption,
-            date: item.dataset.date,
-            location: item.dataset.loc,
-            context: item.dataset.ctx
-          });
-        });
+      // 3-column photo grid
+      const grid = document.createElement('div');
+      grid.className = 'gp-photo-grid';
+
+      g.photos.forEach(photo => {
+        const cell = document.createElement('div');
+        cell.className = 'gp-photo-cell';
+        cell.id = `cell-${photo.id}`;
+        cell.dataset.id = photo.id;
+        cell.dataset.tags = photo.tags.join(',');
+
+        cell.innerHTML = `
+          <img src="${photo.url}" alt="${photo.dateStr} · ${photo.loc}" loading="lazy" />
+          <div class="gp-match-dot"></div>
+          <div class="gp-photo-tags">
+            ${photo.tags.map(t => `<span class="gp-photo-tag-chip">${t}</span>`).join('')}
+          </div>
+        `;
+
+        cell.addEventListener('click', () => openViewer(photo));
+        grid.appendChild(cell);
       });
 
-      photosTimelineStream.appendChild(groupEl);
-    });
-  }
-
-  // ==========================================================================
-  // NAVIGATION TABS (Photos / Search / Library)
-  // ==========================================================================
-  function setupNavigationTabs() {
-    const tabs = [
-      { btn: tabPhotos, screen: screenPhotos, name: 'photos' },
-      { btn: tabSearch, screen: screenSearch, name: 'search' },
-      { btn: tabLibrary, screen: screenLibrary, name: 'library' }
-    ];
-
-    tabs.forEach(t => {
-      t.btn.addEventListener('click', () => switchTab(t.name));
+      groupEl.appendChild(grid);
+      gpTimeline.appendChild(groupEl);
     });
 
-    brandHomeBtn.addEventListener('click', () => switchTab('photos'));
+    // Set correct timeline top padding based on header height
+    adjustTimelinePadding();
   }
 
-  function switchTab(tabName) {
-    activeTab = tabName;
-
-    [tabPhotos, tabSearch, tabLibrary].forEach(b => b.classList.remove('active'));
-    [screenPhotos, screenSearch, screenLibrary].forEach(s => s.classList.remove('active'));
-
-    if (tabName === 'photos') {
-      tabPhotos.classList.add('active');
-      screenPhotos.classList.add('active');
-    } else if (tabName === 'search') {
-      tabSearch.classList.add('active');
-      screenSearch.classList.add('active');
-      mainSearchInput.focus();
-    } else if (tabName === 'library') {
-      tabLibrary.classList.add('active');
-      screenLibrary.classList.add('active');
+  function adjustTimelinePadding() {
+    const topBar = document.querySelector('.gp-top-bar');
+    if (topBar) {
+      gpTimeline.style.paddingTop = topBar.offsetHeight + 'px';
     }
   }
 
   // ==========================================================================
-  // SEARCH INTERACTIONS & PROGRESSIVE MEMORY LOCATOR
+  // SEARCH LOGIC
+  // SEARCH → HIGHLIGHT (in-place) → NEXT/PREV navigation
+  // The timeline is NEVER filtered. Photos stay in their chronological order.
   // ==========================================================================
-  function setupSearchInteractions() {
-    // Clear button
-    btnClearSearch.addEventListener('click', () => {
-      mainSearchInput.value = '';
-      btnClearSearch.style.display = 'none';
-      searchSuggestionsView.style.display = 'block';
-      searchResultsView.style.display = 'none';
-      emptySearchView.style.display = 'none';
-      mainSearchInput.focus();
-    });
 
-    // Input typing
-    mainSearchInput.addEventListener('input', () => {
-      btnClearSearch.style.display = mainSearchInput.value ? 'flex' : 'none';
-    });
+  function doSearch(rawQuery) {
+    activeQuery = rawQuery.trim().toLowerCase();
+    activeTerms = activeQuery
+      .split(/[\s+,]+/)
+      .map(t => t.trim())
+      .filter(Boolean);
 
-    // Enter submission
-    mainSearchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const query = mainSearchInput.value.trim();
-        if (query) executeMemorySearch(query);
+    if (!activeTerms.length) {
+      clearSearch();
+      return;
+    }
+
+    // 1. Find all matching photo IDs (photos whose tags include any search term)
+    matchIds = [];
+    document.querySelectorAll('.gp-photo-cell').forEach(cell => {
+      const photoId = cell.dataset.id;
+      const tags = (cell.dataset.tags || '').split(',');
+      const isMatch = activeTerms.some(term => tags.some(tag => tag.includes(term)));
+
+      cell.classList.remove('is-match', 'is-current-match');
+
+      if (isMatch) {
+        matchIds.push(photoId);
+        cell.classList.add('is-match');
       }
     });
 
-    // Example suggestion clicks
-    document.querySelectorAll('.gp-suggestion-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const query = btn.dataset.query;
-        mainSearchInput.value = query;
-        btnClearSearch.style.display = 'flex';
-        executeMemorySearch(query);
-      });
-    });
+    // 2. Render active tag chips row
+    renderTagChips();
 
-    // Progressive refinement chips (+ Place, + People, etc.)
-    document.querySelectorAll('.gp-refine-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const type = chip.dataset.type;
-        const currentQuery = mainSearchInput.value.trim();
-        let addition = '';
-        if (type === 'place') addition = 'at the beach';
-        if (type === 'people') addition = 'with friends';
-        if (type === 'activity') addition = 'relaxing';
-        if (type === 'time') addition = 'in the evening';
+    // 3. Show/update info bar: "Found N matching photos"
+    if (matchIds.length > 0) {
+      searchInfoText.textContent = `Found ${matchIds.length} matching photo${matchIds.length > 1 ? 's' : ''}`;
+      searchInfoBar.style.display = 'block';
 
-        const updatedQuery = `${currentQuery} ${addition}`.trim();
-        mainSearchInput.value = updatedQuery;
-        executeMemorySearch(updatedQuery);
-      });
-    });
+      // 4. Highlight first match as current
+      currentMatchIdx = 0;
+      highlightCurrentMatch();
 
-    // Empty state hints
-    document.querySelectorAll('.gp-empty-pill').forEach(pill => {
-      pill.addEventListener('click', () => {
-        const hint = pill.dataset.hint;
-        let sample = 'Goa café with friends in the evening';
-        if (hint === 'place') sample = 'Goa beach';
-        if (hint === 'people') sample = 'with friends in Goa';
-        if (hint === 'activity') sample = 'sunset walk at the beach';
-        if (hint === 'time') sample = 'evening dinner in Goa';
+      // 5. Show NEXT/PREV navigator
+      matchNavigator.style.display = 'flex';
+      updateNavigator();
 
-        mainSearchInput.value = sample;
-        btnClearSearch.style.display = 'flex';
-        executeMemorySearch(sample);
-      });
-    });
-  }
-
-  // Execute Memory Search (Queries API or resolves matching moments)
-  async function executeMemorySearch(query) {
-    searchSuggestionsView.style.display = 'none';
-    emptySearchView.style.display = 'none';
-    searchResultsView.style.display = 'block';
-
-    // 1. Try real API call to Groq LPU backend
-    try {
-      const res = await fetch('/api/v1/memories/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': 'user_demo_01'
-        },
-        body: JSON.stringify({ query: query })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        handleSearchResponse(query, data);
-        return;
-      }
-    } catch (err) {
-      console.warn('Backend search API offline, using local semantic resolver:', err);
-    }
-
-    // 2. Fallback semantic resolution
-    fallbackLocalSearch(query);
-  }
-
-  function handleSearchResponse(query, data) {
-    const slots = data.parsedIntent?.extractedSlots || {};
-    const clues = [];
-
-    // Extract natural human clue chips
-    if (slots.places && slots.places.length) clues.push(...slots.places.map(p => p.rawText || p.resolvedEntity || 'Goa'));
-    if (slots.activities && slots.activities.length) clues.push(...slots.activities.map(a => a.rawText || a.normalizedActivity || 'Café'));
-    if (slots.participants && slots.participants.length) clues.push(...slots.participants.map(p => p.rawText || 'Friends'));
-    if (slots.temporal && slots.temporal.timeOfDay) clues.push(capitalize(slots.temporal.timeOfDay));
-
-    // Fallback if empty
-    if (!clues.length) {
-      clues.push('Goa', 'Café', 'Friends', 'Evening');
-    }
-
-    renderUnderstoodChips(clues);
-
-    // Map matched moments
-    const moments = [];
-    if (data.primaryAnchor) {
-      const epMatch = TIMELINE_DATA.find(t => t.id === data.primaryAnchor.episodeId) || TIMELINE_DATA[4];
-      moments.push({
-        ...epMatch,
-        strengthLabel: 'Closest match'
-      });
-    }
-
-    // Secondary moments
-    if (data.alternativeAnchors && data.alternativeAnchors.length) {
-      data.alternativeAnchors.forEach((alt, idx) => {
-        const epMatch = TIMELINE_DATA.find(t => t.id === alt.episodeId);
-        if (epMatch && !moments.some(m => m.id === epMatch.id)) {
-          moments.push({
-            ...epMatch,
-            strengthLabel: idx === 0 ? 'Similar memory' : 'Another possible memory'
-          });
-        }
-      });
-    }
-
-    // Ensure at least 3 moments for the user demo
-    fillMomentsBuffer(moments);
-    displayFoundMoments(moments);
-  }
-
-  function fallbackLocalSearch(query) {
-    const q = query.toLowerCase();
-    const clues = [];
-
-    if (q.includes('goa')) clues.push('Goa');
-    if (q.includes('café') || q.includes('cafe')) clues.push('Café');
-    if (q.includes('friend')) clues.push('Friends');
-    if (q.includes('evening') || q.includes('night')) clues.push('Evening');
-    if (q.includes('sunset')) clues.push('Sunset');
-    if (q.includes('beach')) clues.push('Beach');
-    if (q.includes('coffee')) clues.push('Coffee');
-
-    if (!clues.length) clues.push('Goa', 'Café', 'Friends', 'Evening');
-    renderUnderstoodChips(clues);
-
-    const moments = [];
-    if (q.includes('cafe') || q.includes('café') || q.includes('evening') || q.includes('dinner')) {
-      moments.push({ ...TIMELINE_DATA[4], strengthLabel: 'Closest match' });
-      moments.push({ ...TIMELINE_DATA[2], strengthLabel: 'Similar memory' });
-      moments.push({ ...TIMELINE_DATA[6], strengthLabel: 'Another possible memory' });
-    } else if (q.includes('sunset') || q.includes('baga') || q.includes('beach')) {
-      moments.push({ ...TIMELINE_DATA[1], strengthLabel: 'Closest match' });
-      moments.push({ ...TIMELINE_DATA[4], strengthLabel: 'Similar memory' });
-      moments.push({ ...TIMELINE_DATA[2], strengthLabel: 'Another possible memory' });
+      // 6. Scroll to first match
+      scrollToCurrentMatch(true);
     } else {
-      moments.push({ ...TIMELINE_DATA[4], strengthLabel: 'Closest match' });
-      moments.push({ ...TIMELINE_DATA[1], strengthLabel: 'Similar memory' });
-      moments.push({ ...TIMELINE_DATA[5], strengthLabel: 'Another possible memory' });
+      searchInfoText.textContent = 'No photos match your search';
+      searchInfoBar.style.display = 'block';
+      matchNavigator.style.display = 'none';
     }
 
-    displayFoundMoments(moments);
+    adjustTimelinePadding();
   }
 
-  function fillMomentsBuffer(moments) {
-    if (moments.length < 3) {
-      const candidates = [TIMELINE_DATA[4], TIMELINE_DATA[2], TIMELINE_DATA[1], TIMELINE_DATA[6]];
-      candidates.forEach(cand => {
-        if (moments.length < 3 && !moments.some(m => m.id === cand.id)) {
-          moments.push({ ...cand, strengthLabel: 'Similar memory' });
-        }
-      });
+  function highlightCurrentMatch() {
+    // Remove current-match from all, apply only to the current one
+    document.querySelectorAll('.gp-photo-cell.is-current-match').forEach(c =>
+      c.classList.remove('is-current-match')
+    );
+
+    if (matchIds.length === 0) return;
+
+    const currentId = matchIds[currentMatchIdx];
+    const cell = document.getElementById(`cell-${currentId}`);
+    if (cell) {
+      cell.classList.add('is-current-match');
     }
   }
 
-  function renderUnderstoodChips(clues) {
-    understoodChipsList.innerHTML = '';
-    clues.forEach(clue => {
+  function scrollToCurrentMatch(firstTime = false) {
+    if (matchIds.length === 0) return;
+    const currentId = matchIds[currentMatchIdx];
+    const cell = document.getElementById(`cell-${currentId}`);
+    if (cell) {
+      // Center the current match in viewport
+      const behavior = firstTime ? 'smooth' : 'smooth';
+      cell.scrollIntoView({ behavior, block: 'center' });
+    }
+  }
+
+  function updateNavigator() {
+    const total = matchIds.length;
+    const current = currentMatchIdx + 1;
+    navCounter.textContent = `${current} of ${total}`;
+    btnPrevMatch.disabled = currentMatchIdx <= 0;
+    btnNextMatch.disabled = currentMatchIdx >= total - 1;
+  }
+
+  function renderTagChips() {
+    searchTagsList.innerHTML = '';
+    activeTerms.forEach(term => {
       const chip = document.createElement('div');
-      chip.className = 'gp-clue-chip';
+      chip.className = 'gp-search-tag-chip';
       chip.innerHTML = `
-        <span>${clue}</span>
-        <button type="button" class="gp-clue-chip-remove" aria-label="Remove ${clue}">✕</button>
+        <span>${term}</span>
+        <button class="gp-search-tag-remove" aria-label="Remove ${term}" data-term="${term}">✕</button>
       `;
-      chip.querySelector('.gp-clue-chip-remove').addEventListener('click', () => {
-        chip.remove();
+      chip.querySelector('.gp-search-tag-remove').addEventListener('click', () => {
+        removeTerm(term);
       });
-      understoodChipsList.appendChild(chip);
+      searchTagsList.appendChild(chip);
     });
+
+    if (activeTerms.length > 0) {
+      searchTagsRow.style.display = 'flex';
+    } else {
+      searchTagsRow.style.display = 'none';
+    }
+    adjustTimelinePadding();
   }
 
-  // Display Found Memory Moments (Screen 3)
-  function displayFoundMoments(moments) {
-    activeMatchedMoments = moments;
-    currentNavIndex = 0;
-
-    resultsCountHeading.textContent = `${moments.length} possible memory location${moments.length > 1 ? 's' : ''}`;
-    memoryMomentsList.innerHTML = '';
-
-    moments.forEach((moment, idx) => {
-      const card = document.createElement('div');
-      card.className = 'gp-moment-card';
-
-      card.innerHTML = `
-        <div class="gp-moment-header">
-          <div class="gp-moment-location">${moment.location}</div>
-          <span class="gp-moment-strength">${moment.strengthLabel || (idx === 0 ? 'Closest match' : 'Similar memory')}</span>
-        </div>
-        <div class="gp-moment-datetime">${moment.dateStr} · ${moment.timeOfDay}</div>
-        
-        <div class="gp-moment-preview-strip">
-          ${moment.photos.slice(0, 3).map(p => `
-            <img class="gp-moment-preview-thumb" src="${p.url}" alt="${p.caption}" loading="lazy" />
-          `).join('')}
-        </div>
-
-        <div class="gp-moment-footer">
-          <span class="gp-moment-context">${moment.contextTags.slice(0, 3).join(' · ')}</span>
-          <button type="button" class="gp-btn-view-memory" data-index="${idx}" data-id="${moment.id}">
-            View memory →
-          </button>
-        </div>
-      `;
-
-      // Tap "View memory →" jumps into timeline (Screen 4 interaction)
-      card.querySelector('.gp-btn-view-memory').addEventListener('click', () => {
-        jumpToTimelineMoment(moment.id, idx);
-      });
-
-      // Tap preview image opens viewer
-      card.querySelectorAll('.gp-moment-preview-thumb').forEach((thumb, pIdx) => {
-        thumb.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const photo = moment.photos[pIdx];
-          openPhotoViewer({
-            url: photo.url,
-            caption: photo.caption,
-            date: moment.dateStr,
-            location: moment.location,
-            context: moment.contextTags.join(' · ')
-          });
-        });
-      });
-
-      memoryMomentsList.appendChild(card);
-    });
-  }
-
-  // ==========================================================================
-  // SCREEN 4: MEMORY LOCATOR (Jump to Timeline & Floating Navigator)
-  // ==========================================================================
-  function jumpToTimelineMoment(episodeId, navIndex = 0) {
-    currentNavIndex = navIndex;
-
-    // 1. Switch back to normal chronological photo timeline
-    switchTab('photos');
-
-    // 2. Remove any previous memory highlight banners
-    document.querySelectorAll('.gp-timeline-group').forEach(grp => {
-      grp.classList.remove('is-located-memory');
-      const banner = grp.querySelector('.gp-located-indicator-banner');
-      if (banner) banner.remove();
-    });
-
-    // 3. Locate target group element
-    const targetGroup = document.getElementById(`group-${episodeId}`);
-    if (targetGroup) {
-      // Highlight the located memory group
-      targetGroup.classList.add('is-located-memory');
-
-      const indicator = document.createElement('div');
-      indicator.className = 'gp-located-indicator-banner';
-      indicator.innerHTML = `
-        <span class="gp-located-sparkle">✦</span>
-        <span>Possible memory</span>
-      `;
-      targetGroup.insertBefore(indicator, targetGroup.firstChild);
-
-      // Smoothly scroll to the date in the timeline
-      setTimeout(() => {
-        targetGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-
-      // Show floating memory navigator if we came from search results
-      if (activeMatchedMoments && activeMatchedMoments.length > 1) {
-        updateMemoryNavigator();
-        memoryNavigator.style.display = 'flex';
-      }
+  function removeTerm(termToRemove) {
+    activeTerms = activeTerms.filter(t => t !== termToRemove);
+    const newQuery = activeTerms.join(' ');
+    searchInput.value = newQuery;
+    if (newQuery) {
+      doSearch(newQuery);
+    } else {
+      clearSearch();
     }
   }
 
-  function setupMemoryNavigator() {
-    btnNextMemory.addEventListener('click', () => {
-      if (currentNavIndex < activeMatchedMoments.length - 1) {
-        currentNavIndex++;
-        const nextMoment = activeMatchedMoments[currentNavIndex];
-        jumpToTimelineMoment(nextMoment.id, currentNavIndex);
-      }
+  function clearSearch() {
+    activeQuery = '';
+    activeTerms = [];
+    matchIds = [];
+    currentMatchIdx = 0;
+
+    searchInput.value = '';
+    btnClearSearch.style.display = 'none';
+    searchInfoBar.style.display = 'none';
+    searchTagsRow.style.display = 'none';
+    matchNavigator.style.display = 'none';
+    suggestionsOverlay.style.display = 'none';
+    searchTagsList.innerHTML = '';
+
+    // Remove all highlights — photos go back to normal
+    document.querySelectorAll('.gp-photo-cell').forEach(c => {
+      c.classList.remove('is-match', 'is-current-match');
     });
 
-    btnPrevMemory.addEventListener('click', () => {
-      if (currentNavIndex > 0) {
-        currentNavIndex--;
-        const prevMoment = activeMatchedMoments[currentNavIndex];
-        jumpToTimelineMoment(prevMoment.id, currentNavIndex);
-      }
-    });
-
-    btnCloseNavigator.addEventListener('click', () => {
-      memoryNavigator.style.display = 'none';
-      document.querySelectorAll('.gp-timeline-group').forEach(grp => {
-        grp.classList.remove('is-located-memory');
-        const banner = grp.querySelector('.gp-located-indicator-banner');
-        if (banner) banner.remove();
-      });
-    });
-  }
-
-  function updateMemoryNavigator() {
-    const total = activeMatchedMoments.length;
-    const current = currentNavIndex + 1;
-    memoryCounterText.textContent = `${current} of ${total}`;
-
-    btnPrevMemory.disabled = currentNavIndex <= 0;
-    btnNextMemory.disabled = currentNavIndex >= total - 1;
+    adjustTimelinePadding();
   }
 
   // ==========================================================================
-  // SCREEN 13: FULLSCREEN PHOTO VIEWER
+  // SEARCH INPUT EVENTS
   // ==========================================================================
-  function setupPhotoViewer() {
-    btnViewerBack.addEventListener('click', closePhotoViewer);
+  searchInput.addEventListener('focus', () => {
+    if (!searchInput.value.trim()) {
+      suggestionsOverlay.style.display = 'block';
+    }
+  });
 
-    // Escape key closes viewer
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && photoViewerModal.style.display === 'flex') {
-        closePhotoViewer();
-      }
+  searchInput.addEventListener('input', () => {
+    const val = searchInput.value;
+    btnClearSearch.style.display = val ? 'flex' : 'none';
+
+    if (!val.trim()) {
+      suggestionsOverlay.style.display = 'block';
+      clearSearch();
+    } else {
+      suggestionsOverlay.style.display = 'none';
+    }
+  });
+
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      suggestionsOverlay.style.display = 'none';
+      searchInput.blur();
+      doSearch(searchInput.value);
+    }
+    if (e.key === 'Escape') {
+      clearSearch();
+      searchInput.blur();
+    }
+  });
+
+  btnClearSearch.addEventListener('click', () => {
+    clearSearch();
+    searchInput.focus();
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#gpSearchBar') && !e.target.closest('#suggestionsOverlay')) {
+      suggestionsOverlay.style.display = 'none';
+    }
+  });
+
+  // Suggestion chips
+  document.querySelectorAll('.gp-suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.query;
+      searchInput.value = q;
+      btnClearSearch.style.display = 'flex';
+      suggestionsOverlay.style.display = 'none';
+      searchInput.blur();
+      doSearch(q);
     });
+  });
+
+  // ==========================================================================
+  // NEXT / PREVIOUS MATCH NAVIGATION
+  // Scrolls chronological timeline to the next/prev matching photo
+  // The timeline does NOT change — only the focused match changes
+  // ==========================================================================
+  btnNextMatch.addEventListener('click', () => {
+    if (currentMatchIdx < matchIds.length - 1) {
+      currentMatchIdx++;
+      highlightCurrentMatch();
+      scrollToCurrentMatch();
+      updateNavigator();
+    }
+  });
+
+  btnPrevMatch.addEventListener('click', () => {
+    if (currentMatchIdx > 0) {
+      currentMatchIdx--;
+      highlightCurrentMatch();
+      scrollToCurrentMatch();
+      updateNavigator();
+    }
+  });
+
+  btnGoHome.addEventListener('click', () => {
+    clearSearch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ==========================================================================
+  // FULLSCREEN PHOTO VIEWER (Section 13 — simple, photo-first)
+  // ==========================================================================
+  function openViewer(photo) {
+    viewerImg.src = photo.url;
+    viewerDate.textContent = photo.dateStr;
+    viewerLoc.textContent = photo.loc;
+    viewerTags.innerHTML = photo.tags
+      .map(t => `<span class="gp-viewer-tag">${t}</span>`)
+      .join('');
+    photoViewer.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
   }
 
-  function openPhotoViewer({ url, caption, date, location, context }) {
-    viewerMainImage.src = url;
-    viewerDate.textContent = date || 'Nov 17, 2023';
-    viewerLocation.textContent = location || 'Goa';
-    viewerContext.textContent = context || 'Memory Moment';
-
-    photoViewerModal.style.display = 'flex';
+  function closeViewer() {
+    photoViewer.style.display = 'none';
+    viewerImg.src = '';
+    document.body.style.overflow = '';
   }
 
-  function closePhotoViewer() {
-    photoViewerModal.style.display = 'none';
-    viewerMainImage.src = '';
-  }
+  btnViewerClose.addEventListener('click', closeViewer);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && photoViewer.style.display !== 'none') closeViewer();
+  });
 
-  // Helper
-  function capitalize(str) {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  // Start app
-  init();
-
+  // ==========================================================================
+  // INIT
+  // ==========================================================================
+  buildTimeline();
 });

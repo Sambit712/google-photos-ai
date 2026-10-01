@@ -1,359 +1,89 @@
 /* ==========================================================================
-   Google Photos — Semantic Memory Locator
-   UI/UX Implementation based strictly on docs/UI.txt
+   Google Photos — Semantic Photo Locator
+   Spec: SEARCH → HIGHLIGHT → EXPLORE CONTEXT → NEXT MATCH
+   The full chronological timeline stays visible. Matching photos
+   are highlighted in-place. NEXT/PREV navigates between matches.
    ========================================================================== */
 
 :root {
-  --gp-bg: #ffffff;
-  --gp-surface: #ffffff;
-  --gp-surface-variant: #f1f3f4;
-  --gp-surface-hover: #f8f9fa;
-  --gp-text-primary: #1f1f1f;
-  --gp-text-secondary: #5f6368;
-  --gp-text-tertiary: #80868b;
-  --gp-blue: #1a73e8;
-  --gp-blue-hover: #1765cc;
-  --gp-blue-light: #e8f0fe;
-  --gp-blue-border: #d2e3fc;
-  --gp-border: #dadce0;
-  --gp-border-light: #e8eaed;
-  --gp-divider: #f1f3f4;
-  --gp-font-sans: 'Roboto', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --gp-nav-height: 56px;
-  --gp-header-height: 56px;
-  --gp-radius-sm: 8px;
-  --gp-radius-md: 12px;
-  --gp-radius-lg: 16px;
-  --gp-radius-full: 9999px;
-  --gp-shadow-subtle: 0 1px 3px rgba(60, 64, 67, 0.12), 0 1px 2px rgba(60, 64, 67, 0.08);
-  --gp-shadow-float: 0 4px 12px rgba(60, 64, 67, 0.18), 0 2px 6px rgba(60, 64, 67, 0.12);
+  --blue: #1a73e8;
+  --blue-bg: rgba(26, 115, 232, 0.08);
+  --blue-ring-dim: rgba(26, 115, 232, 0.35);
+  --blue-ring-focus: rgba(26, 115, 232, 0.9);
+  --text: #1f1f1f;
+  --text-sec: #5f6368;
+  --text-light: #9aa0a6;
+  --bg: #fff;
+  --surface: #f8f9fa;
+  --border: #dadce0;
+  --border-light: #e8eaed;
+  --top-bar: 56px;
+  --info-bar: 0px;  /* dynamic */
+  --nav-bar: 56px;
+  --font: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --radius-pill: 9999px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
-body.gp-app-root {
-  font-family: var(--gp-font-sans);
-  background-color: #f8f9fa;
-  color: var(--gp-text-primary);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
   overflow-x: hidden;
 }
 
-/* Mobile-first centered application shell */
-.gp-app-frame {
-  width: 100%;
-  max-width: 520px;
-  min-height: 100vh;
-  background-color: var(--gp-bg);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.06);
-}
-
 /* ==========================================================================
-   HEADER (Clean, Compact, White)
-   ☰/icon            Google Photos              [Avatar]
+   TOP BAR (Search bar + brand + avatar)
    ========================================================================== */
-.gp-header {
-  height: var(--gp-header-height);
-  background-color: var(--gp-bg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  position: sticky;
+
+.gp-top-bar {
+  position: fixed;
   top: 0;
-  z-index: 40;
-  border-bottom: 1px solid var(--gp-border-light);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
 }
 
-.gp-header-left,
-.gp-header-right {
+.gp-top-bar-inner {
   display: flex;
   align-items: center;
-  width: 40px;
-}
-
-.gp-header-center {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gp-icon-btn {
-  background: none;
-  border: none;
-  color: var(--gp-text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  transition: background-color 0.15s ease;
-}
-
-.gp-icon-btn:hover {
-  background-color: var(--gp-surface-variant);
-  color: var(--gp-text-primary);
-}
-
-.gp-header-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.gp-brand-title {
-  font-size: 19px;
-  font-weight: 500;
-  letter-spacing: -0.2px;
-  color: var(--gp-text-primary);
-}
-
-.gp-avatar-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-.gp-avatar-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1a73e8, #4285f4);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* ==========================================================================
-   SCREENS VIEWPORT
-   ========================================================================== */
-.gp-screen-viewport {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: calc(var(--gp-nav-height) + 16px);
-  position: relative;
-  overflow-y: auto;
-}
-
-.gp-screen {
-  display: none;
-  flex-direction: column;
-  width: 100%;
-}
-
-.gp-screen.active {
-  display: flex;
-}
-
-/* ==========================================================================
-   SCREEN 1: PHOTOS (Memories Carousel & Chronological Timeline)
-   ========================================================================== */
-
-/* Memories / Highlights Carousel */
-.gp-memories-carousel-section {
-  padding: 14px 0 10px;
-  background-color: var(--gp-bg);
-}
-
-.gp-memories-carousel {
-  display: flex;
   gap: 10px;
-  overflow-x: auto;
-  padding: 0 16px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  padding: 8px 12px;
+  height: var(--top-bar);
 }
 
-.gp-memories-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.gp-memory-card {
-  flex: 0 0 108px;
-  height: 154px;
-  border-radius: var(--gp-radius-md);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  background-color: var(--gp-surface-variant);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.gp-memory-card:active {
-  transform: scale(0.97);
-}
-
-.gp-memory-card-bg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.gp-memory-card-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.75) 100%);
-  pointer-events: none;
-}
-
-.gp-memory-card-label {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.25;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-  z-index: 2;
-}
-
-/* Chronological Photo Timeline Stream */
-.gp-timeline-stream {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.gp-timeline-group {
-  margin-top: 14px;
-  position: relative;
-  transition: background-color 0.4s ease;
-}
-
-/* Subtle Located Memory Highlight (Section 9 in UI.txt) */
-.gp-timeline-group.is-located-memory {
-  background-color: rgba(26, 115, 232, 0.04);
-  border-top: 1.5px solid var(--gp-blue);
-  border-bottom: 1.5px solid var(--gp-blue);
-  padding: 8px 0 12px;
-  scroll-margin-top: 65px;
-}
-
-.gp-located-indicator-banner {
+/* SEARCH BAR — the primary interaction element */
+.gp-search-bar {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 16px 6px;
-  color: var(--gp-blue);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0 14px;
+  height: 40px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
-.gp-located-sparkle {
-  font-size: 14px;
+.gp-search-bar:focus-within {
+  background: var(--bg);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
 }
 
-.gp-group-header {
-  padding: 6px 16px 8px;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.gp-group-date {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--gp-text-primary);
-  letter-spacing: -0.1px;
-}
-
-.gp-group-location {
-  font-size: 13px;
-  color: var(--gp-text-secondary);
-  font-weight: 400;
-}
-
-/* 3-column photo grid with extremely small gaps (Section 3 in UI.txt) */
-.gp-photo-grid-3col {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  width: 100%;
-}
-
-.gp-photo-item {
-  aspect-ratio: 1 / 1;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  background-color: #e0e0e0;
-}
-
-.gp-photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.gp-photo-item:active .gp-photo-img {
-  opacity: 0.85;
-}
-
-/* ==========================================================================
-   SCREEN 2 & 3: SEARCH & POSSIBLE MEMORY LOCATIONS
-   ========================================================================== */
-.gp-screen-search {
-  padding-top: 8px;
-}
-
-.gp-search-header-box {
-  padding: 8px 16px 12px;
-  position: sticky;
-  top: 0;
-  background-color: var(--gp-bg);
-  z-index: 30;
-}
-
-.gp-search-input-wrapper {
-  display: flex;
-  align-items: center;
-  background-color: var(--gp-surface-variant);
-  border-radius: var(--gp-radius-full);
-  padding: 0 16px;
-  height: 48px;
-  gap: 12px;
-  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.08);
-  border: 1px solid transparent;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.gp-search-input-wrapper:focus-within {
-  background-color: #ffffff;
-  border-color: var(--gp-blue);
-  box-shadow: 0 1px 4px rgba(26, 115, 232, 0.2);
-}
-
-.gp-search-icon {
-  color: var(--gp-text-secondary);
+.gp-search-bar-icon {
+  color: var(--text-sec);
   flex-shrink: 0;
 }
 
@@ -362,653 +92,443 @@ body.gp-app-root {
   border: none;
   background: none;
   outline: none;
-  font-family: inherit;
+  font-family: var(--font);
   font-size: 15px;
-  color: var(--gp-text-primary);
+  color: var(--text);
+  min-width: 0;
 }
 
-.gp-search-input::placeholder {
-  color: var(--gp-text-secondary);
-}
+.gp-search-input::placeholder { color: var(--text-sec); }
 
-.gp-clear-search-btn {
+.gp-search-clear {
   background: none;
   border: none;
-  color: var(--gp-text-secondary);
+  color: var(--text-sec);
   cursor: pointer;
-  font-size: 14px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
+.gp-search-clear:hover { background: var(--border-light); }
 
-.gp-clear-search-btn:hover {
-  background-color: var(--gp-border-light);
-}
-
-/* Search Suggestions List (Before Search) */
-.gp-search-suggestions {
-  padding: 12px 16px;
-}
-
-.gp-suggestions-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gp-text-secondary);
-  margin-bottom: 12px;
-}
-
-.gp-suggestions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.gp-suggestion-item {
+.gp-top-right {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: var(--gp-radius-md);
-  border: none;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  width: 100%;
-}
-
-.gp-suggestion-item:hover,
-.gp-suggestion-item:active {
-  background-color: var(--gp-surface-variant);
-}
-
-.gp-sugg-icon {
-  font-size: 18px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-.gp-sugg-text {
-  font-size: 14px;
-  color: var(--gp-text-primary);
-  font-weight: 400;
-}
-
-/* Search Results: "I understood" Area (Section 5 in UI.txt) */
-.gp-understood-box {
-  padding: 4px 16px 14px;
-  border-bottom: 1px solid var(--gp-border-light);
-}
-
-.gp-understood-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--gp-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 8px;
-}
-
-.gp-clue-chips-row {
+.gp-brand-logo {
+  cursor: pointer;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.gp-clue-chip {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: var(--gp-radius-full);
-  background-color: var(--gp-surface-variant);
-  color: var(--gp-text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  border: 1px solid transparent;
 }
 
-.gp-clue-chip-remove {
-  background: none;
+.gp-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
   border: none;
-  color: var(--gp-text-secondary);
-  font-size: 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 2px;
 }
 
-.gp-clue-chip-remove:hover {
-  color: var(--gp-text-primary);
+/* Match info bar (appears after search) */
+.gp-search-info-bar {
+  background: var(--blue-bg);
+  padding: 5px 16px;
+  border-bottom: 1px solid var(--border-light);
 }
 
-/* Results Count Heading (Section 6 in UI.txt: "3 possible memory locations") */
-.gp-results-header {
-  padding: 16px 16px 8px;
-}
-
-.gp-results-count {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--gp-text-primary);
-  letter-spacing: -0.1px;
-}
-
-/* Memory Moments List (Section 7 in UI.txt) */
-.gp-memory-moments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 8px 16px 20px;
-}
-
-.gp-moment-card {
-  background-color: var(--gp-surface);
-  border-radius: var(--gp-radius-md);
-  border: 1px solid var(--gp-border-light);
-  padding: 14px;
-  box-shadow: var(--gp-shadow-subtle);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.gp-moment-card:hover {
-  box-shadow: var(--gp-shadow-float);
-}
-
-.gp-moment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.gp-moment-location {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--gp-text-primary);
-}
-
-.gp-moment-strength {
-  font-size: 12px;
+.gp-search-info-text {
+  font-size: 13px;
+  color: var(--blue);
   font-weight: 500;
-  color: var(--gp-blue);
-  background-color: var(--gp-blue-light);
-  padding: 2px 8px;
-  border-radius: var(--gp-radius-full);
 }
 
-.gp-moment-datetime {
-  font-size: 13px;
-  color: var(--gp-text-secondary);
-  font-weight: 400;
-}
-
-/* Preview Photos Strip (3-4 photos dominating card) */
-.gp-moment-preview-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  border-radius: var(--gp-radius-sm);
-  overflow: hidden;
-  margin: 4px 0;
-}
-
-.gp-moment-preview-thumb {
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-  display: block;
-  background-color: var(--gp-surface-variant);
-  cursor: pointer;
-}
-
-.gp-moment-footer {
+/* Active tag chips row */
+.gp-search-tags-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-top: 4px;
+  padding: 6px 12px;
+  gap: 6px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gp-search-tags-row::-webkit-scrollbar { display: none; }
+
+.gp-search-tags-list {
+  display: flex;
+  gap: 6px;
 }
 
-.gp-moment-context {
-  font-size: 13px;
-  color: var(--gp-text-secondary);
-}
-
-.gp-btn-view-memory {
-  background: none;
-  border: none;
-  color: var(--gp-blue);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+.gp-search-tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: var(--gp-radius-sm);
-  transition: background-color 0.15s ease;
-}
-
-.gp-btn-view-memory:hover {
-  background-color: var(--gp-blue-light);
-}
-
-/* Progressive Memory Refinement ("Add another detail") */
-.gp-refine-box {
-  margin: 8px 16px 24px;
-  padding: 14px;
-  background-color: var(--gp-surface-variant);
-  border-radius: var(--gp-radius-md);
-}
-
-.gp-refine-title {
+  gap: 6px;
+  padding: 4px 10px 4px 12px;
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-ring-dim);
+  border-radius: var(--radius-pill);
+  color: var(--blue);
   font-size: 13px;
   font-weight: 500;
-  color: var(--gp-text-secondary);
+  white-space: nowrap;
+}
+
+.gp-search-tag-remove {
+  background: none;
+  border: none;
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  opacity: 0.7;
+}
+.gp-search-tag-remove:hover { opacity: 1; }
+
+/* ==========================================================================
+   SUGGESTION OVERLAY (shown when input focused, no query yet)
+   ========================================================================== */
+.gp-suggestions-overlay {
+  position: fixed;
+  top: var(--top-bar);
+  left: 0; right: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+  z-index: 90;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.gp-suggestions-inner {
+  padding: 12px 16px 14px;
+}
+
+.gp-suggestions-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 10px;
 }
 
-.gp-refine-chips {
+.gp-suggestions-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.gp-refine-chip {
-  background-color: #ffffff;
-  border: 1px solid var(--gp-border);
-  color: var(--gp-text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: var(--gp-radius-full);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.gp-refine-chip:hover {
-  border-color: var(--gp-blue);
-  color: var(--gp-blue);
-  background-color: var(--gp-blue-light);
-}
-
-/* Empty Search View (Section 14 in UI.txt) */
-.gp-empty-search-view {
-  padding: 40px 24px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.gp-empty-icon {
-  font-size: 38px;
-  margin-bottom: 12px;
-}
-
-.gp-empty-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--gp-text-primary);
-  margin-bottom: 6px;
-}
-
-.gp-empty-desc {
+.gp-suggestion-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
   font-size: 14px;
-  color: var(--gp-text-secondary);
-  max-width: 320px;
-  margin-bottom: 20px;
-  line-height: 1.4;
-}
-
-.gp-empty-prompts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  width: 100%;
-  max-width: 340px;
-}
-
-.gp-empty-pill {
-  background-color: var(--gp-surface-variant);
-  border: 1px solid var(--gp-border-light);
-  border-radius: var(--gp-radius-full);
-  padding: 9px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gp-text-primary);
+  color: var(--text);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.15s;
 }
-
-.gp-empty-pill:hover {
-  background-color: var(--gp-blue-light);
-  border-color: var(--gp-blue-border);
-  color: var(--gp-blue);
+.gp-suggestion-chip:hover {
+  background: var(--blue-bg);
+  border-color: var(--blue-ring-dim);
+  color: var(--blue);
 }
 
 /* ==========================================================================
-   SCREEN 5: LIBRARY (Albums & Collections)
+   MAIN CHRONOLOGICAL PHOTO TIMELINE
+   Photos are ALWAYS visible. Matching photos highlighted in-place.
    ========================================================================== */
-.gp-screen-library {
-  padding: 16px;
+.gp-timeline {
+  /* Dynamic top padding calculated from header height in JS */
+  padding-bottom: 80px;
+  min-height: 100vh;
 }
 
-.gp-library-header {
-  margin-bottom: 16px;
+/* Date Group Header: "Nov 17, 2023  Anjuna, Goa" */
+.gp-group {
+  margin-bottom: 2px;
 }
 
-.gp-library-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--gp-text-primary);
-}
-
-.gp-library-shortcuts {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.gp-shortcut-btn {
-  background-color: var(--gp-surface-variant);
-  border: none;
-  border-radius: var(--gp-radius-md);
-  padding: 12px 6px;
+.gp-group-head {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px 14px 7px;
+  position: sticky;
+  top: 0; /* will be overridden by JS to account for top bar */
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(4px);
+  z-index: 10;
 }
 
-.gp-shortcut-btn:hover {
-  background-color: #e8eaed;
+.gp-group-date {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
 }
 
-.gp-shortcut-icon {
-  font-size: 20px;
+.gp-group-loc {
+  font-size: 13px;
+  color: var(--text-sec);
 }
 
-.gp-shortcut-text {
-  font-size: 12px;
-  color: var(--gp-text-primary);
-  font-weight: 500;
-}
-
-.gp-albums-heading {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--gp-text-primary);
-}
-
-.gp-albums-grid {
+/* 3-column photo grid — photos form the interface, gaps stay tiny */
+.gp-photo-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
 }
 
-.gp-album-card {
-  border-radius: var(--gp-radius-md);
-  overflow: hidden;
-  cursor: pointer;
-  background-color: var(--gp-surface-variant);
-}
-
-.gp-album-thumb {
+/* Individual Photo Cell */
+.gp-photo-cell {
+  position: relative;
   aspect-ratio: 1 / 1;
-  background-size: cover;
-  background-position: center;
-}
-
-.gp-album-info {
-  padding: 8px 10px;
-  background-color: #ffffff;
-}
-
-.gp-album-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gp-text-primary);
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  background: #e0e0e0;
+  cursor: pointer;
 }
 
-.gp-album-count {
-  font-size: 12px;
-  color: var(--gp-text-secondary);
+.gp-photo-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.15s;
+}
+
+/* 
+   HIGHLIGHT STATE: Matching photo
+   Thin blue border + subtle blue glow
+   Communicates: "This photo matches your search"
+   Does NOT remove the surrounding photos
+*/
+.gp-photo-cell.is-match {
+  outline: 2.5px solid var(--blue-ring-dim);
+  outline-offset: -2.5px;
+  z-index: 2;
+}
+
+/* 
+   CURRENT MATCH: Stronger blue outline
+   Communicates: "This is the match you are currently viewing"
+*/
+.gp-photo-cell.is-current-match {
+  outline: 3px solid var(--blue);
+  outline-offset: -3px;
+  z-index: 3;
+  box-shadow: 0 0 0 6px rgba(26, 115, 232, 0.18);
+}
+
+/* Small match indicator dot on matching photos */
+.gp-match-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 1.5px solid #fff;
+  display: none;
+  z-index: 4;
+}
+.gp-photo-cell.is-match .gp-match-dot,
+.gp-photo-cell.is-current-match .gp-match-dot {
+  display: block;
+}
+.gp-photo-cell.is-current-match .gp-match-dot {
+  width: 10px; height: 10px;
+  background: var(--blue);
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.25);
+}
+
+/* Semantic tag overlay on hover */
+.gp-photo-tags {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+  padding: 20px 6px 5px;
+  display: none;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.gp-photo-cell:hover .gp-photo-tags { display: flex; }
+
+.gp-photo-tag-chip {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: var(--radius-pill);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 6px;
+  backdrop-filter: blur(2px);
 }
 
 /* ==========================================================================
-   FLOATING MEMORY NAVIGATOR (Screen 4 Interaction)
-   ← Previous memory       1 of 3       Next memory →
+   MATCH NAVIGATOR BAR (← Previous  2 of 7  Next →)
+   Only visible when a search is active
    ========================================================================== */
-.gp-floating-memory-navigator {
+.gp-match-navigator {
   position: fixed;
-  bottom: calc(var(--gp-nav-height) + 16px);
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #ffffff;
-  box-shadow: var(--gp-shadow-float);
-  border: 1px solid var(--gp-border-light);
-  border-radius: var(--gp-radius-full);
+  bottom: 0;
+  left: 0; right: 0;
+  height: var(--nav-bar);
+  background: var(--bg);
+  border-top: 1px solid var(--border-light);
   display: flex;
   align-items: center;
-  padding: 4px 6px;
-  gap: 8px;
-  z-index: 50;
-  animation: gpSlideUp 0.25s ease-out;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  animation: slideUp 0.2s ease-out;
 }
 
-@keyframes gpSlideUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 15px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-.gp-nav-pill-btn {
+.gp-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   background: none;
   border: none;
-  color: var(--gp-blue);
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: var(--gp-radius-full);
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+  font-family: var(--font);
 }
-
-.gp-nav-pill-btn:hover {
-  background-color: var(--gp-blue-light);
-}
-
-.gp-nav-pill-btn:disabled {
-  color: var(--gp-text-tertiary);
+.gp-nav-btn:hover { background: var(--blue-bg); }
+.gp-nav-btn:disabled {
+  color: var(--text-light);
   cursor: default;
   background: none;
 }
 
-.gp-nav-pill-counter {
-  font-size: 13px;
+.gp-nav-btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+}
+.gp-nav-btn-primary:hover { background: #1765cc; }
+.gp-nav-btn-primary:disabled {
+  background: var(--border);
+  color: var(--text-light);
+}
+
+.gp-nav-counter {
+  font-size: 14px;
   font-weight: 500;
-  color: var(--gp-text-secondary);
-  padding: 0 4px;
-}
-
-.gp-nav-pill-close {
-  background: none;
-  border: none;
-  color: var(--gp-text-secondary);
-  font-size: 13px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gp-nav-pill-close:hover {
-  background-color: var(--gp-surface-variant);
-  color: var(--gp-text-primary);
+  color: var(--text-sec);
 }
 
 /* ==========================================================================
-   PERSISTENT BOTTOM NAVIGATION (Photos / Search / Library)
+   FULLSCREEN PHOTO VIEWER (Screen 13)
    ========================================================================== */
-.gp-bottom-nav {
-  height: var(--gp-nav-height);
-  background-color: var(--gp-bg);
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 520px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid var(--gp-border-light);
-  z-index: 45;
-}
-
-.gp-nav-tab {
-  background: none;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  cursor: pointer;
-  color: var(--gp-text-secondary);
-  transition: color 0.15s ease;
-}
-
-.gp-nav-tab .gp-tab-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 26px;
-  border-radius: var(--gp-radius-full);
-  transition: background-color 0.15s ease;
-}
-
-.gp-nav-tab .gp-tab-label {
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.gp-nav-tab.active {
-  color: var(--gp-blue);
-}
-
-.gp-nav-tab.active .gp-tab-icon {
-  background-color: var(--gp-blue-light);
-}
-
-/* ==========================================================================
-   SCREEN 13: FULLSCREEN PHOTO VIEWER
-   ========================================================================== */
-.gp-photo-viewer {
+.gp-viewer {
   position: fixed;
   inset: 0;
-  background-color: #000000;
-  z-index: 100;
+  background: #000;
+  z-index: 200;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
-.gp-viewer-topbar {
+.gp-viewer-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+  position: absolute;
+  top: 0; left: 0; right: 0;
   z-index: 10;
+}
+
+.gp-viewer-actions {
+  display: flex;
+  gap: 4px;
 }
 
 .gp-viewer-btn {
   background: none;
   border: none;
-  color: #ffffff;
-  width: 40px;
-  height: 40px;
+  color: #fff;
+  width: 40px; height: 40px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.15s ease;
+  transition: background 0.15s;
 }
+.gp-viewer-btn:hover { background: rgba(255,255,255,0.15); }
 
-.gp-viewer-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.gp-viewer-topbar-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.gp-viewer-main-image-wrap {
+.gp-viewer-img-wrap {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  overflow: hidden;
 }
 
 .gp-viewer-img {
   max-width: 100%;
-  max-height: 75vh;
+  max-height: 80vh;
   object-fit: contain;
-  border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.gp-viewer-caption-bar {
-  padding: 16px 20px 24px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
-  color: #ffffff;
+.gp-viewer-meta {
+  padding: 14px 20px 24px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
 }
 
-.gp-viewer-date {
+.gp-viewer-meta-date {
   font-size: 15px;
   font-weight: 600;
+  color: #fff;
   margin-bottom: 2px;
 }
 
-.gp-viewer-location {
+.gp-viewer-meta-loc {
   font-size: 13px;
-  color: #dadce0;
-  margin-bottom: 6px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 8px;
 }
 
-.gp-viewer-context {
-  font-size: 13px;
+.gp-viewer-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.gp-viewer-tag {
+  background: rgba(26,115,232,0.25);
+  border: 1px solid rgba(26,115,232,0.5);
+  border-radius: var(--radius-pill);
   color: #8ab4f8;
-  font-weight: 500;
+  font-size: 12px;
+  padding: 2px 10px;
 }
