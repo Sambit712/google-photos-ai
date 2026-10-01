@@ -201,6 +201,226 @@ html, body {
 .gp-search-tag-remove:hover { opacity: 1; }
 
 /* ==========================================================================
+   TIME FRAME FILTER (secondary, optional)
+   ========================================================================== */
+
+/* Row containing the "Time frame  [ Any time ▼ ]" label + button */
+.gp-timeframe-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px 6px;
+  background: var(--bg);
+}
+
+.gp-timeframe-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* The button itself: [ 📅 Any time ▼ ] */
+.gp-timeframe-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-sec);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gp-timeframe-btn:hover {
+  background: var(--bg);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.gp-timeframe-btn.active {
+  background: var(--blue-bg);
+  border-color: var(--blue-ring-dim);
+  color: var(--blue);
+}
+
+/* Chevron rotates when open */
+.gp-timeframe-chevron {
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.gp-timeframe-btn[aria-expanded="true"] .gp-timeframe-chevron {
+  transform: rotate(180deg);
+}
+
+/* Active timeframe pill row: 📅 Jun 2024 – Aug 2024 × */
+.gp-timeframe-active-row {
+  padding: 4px 14px 6px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.gp-timeframe-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 10px;
+  background: #e6f0fd;
+  border: 1px solid var(--blue-ring-dim);
+  border-radius: var(--radius-pill);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.gp-timeframe-active-clear {
+  background: none;
+  border: none;
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+}
+.gp-timeframe-active-clear:hover { opacity: 1; }
+
+/* ==========================================================================
+   TIME FRAME DROPDOWN PANEL
+   ========================================================================== */
+.gp-timeframe-dropdown {
+  position: fixed;
+  top: 0; /* set via JS */
+  left: 14px;
+  right: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+  z-index: 120;
+  overflow: hidden;
+  animation: tfDropIn 0.15s ease-out;
+}
+
+@keyframes tfDropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.gp-tf-presets {
+  display: flex;
+  flex-direction: column;
+}
+
+.gp-tf-option {
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text);
+  padding: 11px 16px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gp-tf-option:hover { background: var(--surface); }
+.gp-tf-option.selected {
+  color: var(--blue);
+  background: var(--blue-bg);
+  font-weight: 500;
+}
+/* Checkmark for selected preset */
+.gp-tf-option.selected::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  margin-right: 0;
+}
+.gp-tf-option-custom {
+  color: var(--blue);
+  border-top: 1px solid var(--border-light);
+  margin-top: 2px;
+}
+
+/* Custom date range subpanel */
+.gp-tf-custom-divider {
+  border-top: 1px solid var(--border-light);
+  margin: 0 12px;
+}
+
+.gp-tf-custom {
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gp-tf-custom-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gp-tf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gp-tf-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.gp-tf-date-input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  cursor: pointer;
+}
+.gp-tf-date-input:focus {
+  border-color: var(--blue);
+  background: var(--bg);
+}
+
+.gp-tf-apply-btn {
+  align-self: flex-end;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 7px 20px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.gp-tf-apply-btn:hover { background: #1765cc; }
+.gp-tf-apply-btn:disabled { background: var(--border); color: var(--text-light); cursor: default; }
+
+
+
+/* ==========================================================================
    SUGGESTION OVERLAY (shown when input focused, no query yet)
    ========================================================================== */
 .gp-suggestions-overlay {

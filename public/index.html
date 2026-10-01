@@ -62,11 +62,67 @@
       <span class="gp-search-info-text" id="searchInfoText"></span>
     </div>
 
+    <!-- Time Frame filter row (secondary, optional clue) -->
+    <div class="gp-timeframe-row" id="timeframeRow">
+      <span class="gp-timeframe-label">Time frame</span>
+      <button type="button" class="gp-timeframe-btn" id="btnTimeframe" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="color:#5f6368">
+          <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
+        </svg>
+        <span id="timeframeBtnLabel">Any time</span>
+        <svg class="gp-timeframe-chevron" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Active timeframe indicator pill (📅 Jun 2024 – Aug 2024 ×) -->
+    <div class="gp-timeframe-active-row" id="timeframeActiveRow" style="display:none">
+      <span class="gp-timeframe-active-pill" id="timeframeActivePill">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+          <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
+        </svg>
+        <span id="timeframeActivePillText"></span>
+        <button type="button" class="gp-timeframe-active-clear" id="btnClearTimeframe" aria-label="Remove time filter">×</button>
+      </span>
+    </div>
+
     <!-- Active search tag chips row -->
     <div class="gp-search-tags-row" id="searchTagsRow" style="display:none">
       <div class="gp-search-tags-list" id="searchTagsList"></div>
     </div>
   </header>
+
+  <!-- ====================================================================
+       TIME FRAME DROPDOWN PANEL (portal, positioned under the button)
+       ==================================================================== -->
+  <div class="gp-timeframe-dropdown" id="timeframeDropdown" role="menu" style="display:none">
+    <div class="gp-tf-presets">
+      <button type="button" class="gp-tf-option" data-preset="any">Any time</button>
+      <button type="button" class="gp-tf-option" data-preset="today">Today</button>
+      <button type="button" class="gp-tf-option" data-preset="week">This week</button>
+      <button type="button" class="gp-tf-option" data-preset="month">This month</button>
+      <button type="button" class="gp-tf-option" data-preset="year">This year</button>
+      <button type="button" class="gp-tf-option" data-preset="last_year">Last year</button>
+      <button type="button" class="gp-tf-option gp-tf-option-custom" data-preset="custom">Custom range…</button>
+    </div>
+
+    <!-- Custom range panel (shown when "Custom range" chosen) -->
+    <div class="gp-tf-custom" id="tfCustomPanel" style="display:none">
+      <div class="gp-tf-custom-divider"></div>
+      <div class="gp-tf-custom-fields">
+        <div class="gp-tf-field">
+          <label class="gp-tf-field-label" for="tfFromDate">From</label>
+          <input type="date" class="gp-tf-date-input" id="tfFromDate" />
+        </div>
+        <div class="gp-tf-field">
+          <label class="gp-tf-field-label" for="tfToDate">To</label>
+          <input type="date" class="gp-tf-date-input" id="tfToDate" />
+        </div>
+      </div>
+      <button type="button" class="gp-tf-apply-btn" id="btnApplyCustom">Apply</button>
+    </div>
+  </div>
 
   <!-- ====================================================================
        SEARCH SUGGESTION OVERLAY (before search, shows above timeline)

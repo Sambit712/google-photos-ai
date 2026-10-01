@@ -90,6 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewerTags      = document.getElementById('viewerTags');
   const btnGoHome       = document.getElementById('btnGoHome');
 
+  // Timeframe DOM refs
+  const btnTimeframe          = document.getElementById('btnTimeframe');
+  const timeframeBtnLabel     = document.getElementById('timeframeBtnLabel');
+  const timeframeDropdown     = document.getElementById('timeframeDropdown');
+  const timeframeActiveRow    = document.getElementById('timeframeActiveRow');
+  const timeframeActivePillText = document.getElementById('timeframeActivePillText');
+  const btnClearTimeframe     = document.getElementById('btnClearTimeframe');
+  const tfCustomPanel         = document.getElementById('tfCustomPanel');
+  const tfFromDate            = document.getElementById('tfFromDate');
+  const tfToDate              = document.getElementById('tfToDate');
+  const btnApplyCustom        = document.getElementById('btnApplyCustom');
+
   // ==========================================================================
   // STATE
   // ==========================================================================
@@ -97,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTerms   = [];           // individual search terms
   let matchIds      = [];           // IDs of all matching photos (in order)
   let currentMatchIdx = 0;          // index into matchIds for current highlighted
+
+  // Timeframe state
+  let activePreset  = 'any';        // current preset key
+  let tfFrom        = null;         // Date object (start of range), null = no limit
+  let tfTo          = null;         // Date object (end of range), null = no limit
 
   // ==========================================================================
   // BUILD & RENDER FULL CHRONOLOGICAL TIMELINE
@@ -136,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cell.className = 'gp-photo-cell';
         cell.id = `cell-${photo.id}`;
         cell.dataset.id = photo.id;
+        cell.dataset.date = photo.date;      // ISO date for timeframe check
         cell.dataset.tags = photo.tags.join(',');
 
         cell.innerHTML = `
@@ -183,12 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 1. Find all matching photo IDs (photos whose tags include any search term)
+    // 1. Find all matching photo IDs (photos whose tags include any search term
+    //    AND whose date falls within the active time frame, if set)
     matchIds = [];
     document.querySelectorAll('.gp-photo-cell').forEach(cell => {
-      const photoId = cell.dataset.id;
-      const tags = (cell.dataset.tags || '').split(',');
-      const isMatch = activeTerms.some(term => tags.some(tag => tag.includes(term)));
+      const photoId   = cell.dataset.id;
+      const tags      = (cell.dataset.tags || '').split(',');
+      const photoDate = new Date(cell.dataset.date);
+
+      const tagMatch  = activeTerms.some(term => tags.some(tag => tag.includes(term)));
+      const dateMatch = isInTimeframe(photoDate);
+      const isMatch   = tagMatch && dateMatch;
 
       cell.classList.remove('is-match', 'is-current-match');
 
@@ -203,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Show/update info bar: "Found N matching photos"
     if (matchIds.length > 0) {
-      searchInfoText.textContent = `Found ${matchIds.length} matching photo${matchIds.length > 1 ? 's' : ''}`;
+      const tfSuffix = (activePreset !== 'any') ? ` within ${timeframeBtnLabel.textContent}` : '';
+      searchInfoText.textContent = `Found ${matchIds.length} matching photo${matchIds.length > 1 ? 's' : ''}${tfSuffix}`;
       searchInfoBar.style.display = 'block';
 
       // 4. Highlight first match as current
@@ -398,6 +422,158 @@ document.addEventListener('DOMContentLoaded', () => {
   btnGoHome.addEventListener('click', () => {
     clearSearch();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ==========================================================================
+  // TIME FRAME FILTER
+  // ==========================================================================
+
+  /** Returns true if photoDate falls within the active [tfFrom, tfTo] window */
+  function isInTimeframe(photoDate) {
+    if (activePreset === 'any') return true;
+    if (tfFrom && photoDate < tfFrom) return false;
+    if (tfTo   && photoDate > tfTo)   return false;
+    return true;
+  }
+
+  /** Compute tfFrom / tfTo from a preset string */
+  function applyPreset(preset) {
+    const now   = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    activePreset = preset;
+    tfFrom = null;
+    tfTo   = null;
+
+    if (preset === 'any') {
+      /* no bounds */
+    } else if (preset === 'today') {
+      tfFrom = today;
+      tfTo   = new Date(today.getTime() + 86399999);
+    } else if (preset === 'week') {
+      const dow = today.getDay();
+      tfFrom = new Date(today); tfFrom.setDate(today.getDate() - dow);
+      tfTo   = new Date(today); tfTo.setDate(today.getDate() + (6 - dow));
+    } else if (preset === 'month') {
+      tfFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+      tfTo   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    } else if (preset === 'year') {
+      tfFrom = new Date(now.getFullYear(), 0, 1);
+      tfTo   = new Date(now.getFullYear(), 11, 31);
+    } else if (preset === 'last_year') {
+      tfFrom = new Date(now.getFullYear() - 1, 0, 1);
+      tfTo   = new Date(now.getFullYear() - 1, 11, 31);
+    }
+    /* 'custom' is handled by applyCustom() */
+  }
+
+  /** Human-readable label for the active timeframe pill */
+  function timeframeLabel() {
+    if (activePreset === 'any')       return null;
+    if (activePreset === 'today')     return 'Today';
+    if (activePreset === 'week')      return 'This week';
+    if (activePreset === 'month')     return 'This month';
+    if (activePreset === 'year')      return 'This year';
+    if (activePreset === 'last_year') return 'Last year';
+    if (activePreset === 'custom' && tfFrom && tfTo) {
+      return `${fmtDate(tfFrom)} – ${fmtDate(tfTo)}`;
+    }
+    return null;
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function updateTimeframeUI() {
+    const label = timeframeLabel();
+    if (label) {
+      timeframeBtnLabel.textContent = label;
+      btnTimeframe.classList.add('active');
+      timeframeActivePillText.textContent = label;
+      timeframeActiveRow.style.display = 'block';
+    } else {
+      timeframeBtnLabel.textContent = 'Any time';
+      btnTimeframe.classList.remove('active');
+      timeframeActiveRow.style.display = 'none';
+    }
+    // Re-run search if there's an active query
+    if (activeTerms.length) doSearch(searchInput.value);
+    adjustTimelinePadding();
+  }
+
+  function openDropdown() {
+    // Position dropdown just below the timeframe row
+    const rowRect = document.getElementById('timeframeRow').getBoundingClientRect();
+    timeframeDropdown.style.top = (rowRect.bottom + 4) + 'px';
+    timeframeDropdown.style.display = 'block';
+    btnTimeframe.setAttribute('aria-expanded', 'true');
+    // Mark active preset
+    document.querySelectorAll('.gp-tf-option').forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.preset === activePreset);
+    });
+  }
+
+  function closeDropdown() {
+    timeframeDropdown.style.display = 'none';
+    btnTimeframe.setAttribute('aria-expanded', 'false');
+    tfCustomPanel.style.display = 'none';
+  }
+
+  // Toggle dropdown open/close
+  btnTimeframe.addEventListener('click', e => {
+    e.stopPropagation();
+    if (timeframeDropdown.style.display === 'none') {
+      openDropdown();
+    } else {
+      closeDropdown();
+    }
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#timeframeDropdown') && !e.target.closest('#btnTimeframe')) {
+      closeDropdown();
+    }
+  });
+
+  // Preset option clicks
+  document.querySelectorAll('.gp-tf-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const preset = opt.dataset.preset;
+      if (preset === 'custom') {
+        // Show custom sub-panel, keep dropdown open
+        tfCustomPanel.style.display = 'flex';
+        document.querySelectorAll('.gp-tf-option').forEach(o =>
+          o.classList.toggle('selected', o.dataset.preset === 'custom'));
+        return;
+      }
+      applyPreset(preset);
+      closeDropdown();
+      updateTimeframeUI();
+    });
+  });
+
+  // Custom range Apply
+  btnApplyCustom.addEventListener('click', () => {
+    const fromVal = tfFromDate.value;
+    const toVal   = tfToDate.value;
+    if (!fromVal || !toVal) return;
+
+    activePreset = 'custom';
+    tfFrom = new Date(fromVal);
+    tfTo   = new Date(toVal);
+    // extend To to end of day
+    tfTo.setHours(23, 59, 59, 999);
+
+    closeDropdown();
+    updateTimeframeUI();
+  });
+
+  // Dismiss active timeframe pill ×
+  btnClearTimeframe.addEventListener('click', () => {
+    applyPreset('any');
+    updateTimeframeUI();
   });
 
   // ==========================================================================
